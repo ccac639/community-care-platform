@@ -21,6 +21,7 @@ export interface HealthChatResult {
   isPhysical: boolean;
   affectedAreas?: string[];
   possibleDiseases?: { name: string; probability: number }[];
+  canDiagnose: boolean;
   timestamp: number;
 }
 

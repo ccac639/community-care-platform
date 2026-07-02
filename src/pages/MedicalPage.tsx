@@ -42,15 +42,48 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
   const [allSymptoms, setAllSymptoms] = useState<string[]>([]);
   const [timeline, setTimeline] = useState<HealthTimelineEntry[]>([]);
   const [latestResult, setLatestResult] = useState<HealthChatResult | null>(null);
+  const [displayRiskScore, setDisplayRiskScore] = useState(0);
   const [showMap, setShowMap] = useState(false);
   const [mapInitialHospitalId, setMapInitialHospitalId] = useState<string | null>(null);
   const [nearbyHospitals] = useState<HospitalWithDistance[]>(staticHospitals);
   const [activeTab, setActiveTab] = useState<"chat" | "timeline" | "symptoms">("chat");
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
+
+  useEffect(() => {
+    if (latestResult?.canDiagnose) {
+      const targetScore = latestResult.riskScore;
+      const startScore = displayRiskScore;
+      const duration = 1500;
+      const startTime = performance.now();
+
+      const animate = (currentTime: number) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const currentScore = Math.round(startScore + (targetScore - startScore) * eased);
+        setDisplayRiskScore(currentScore);
+
+        if (progress < 1) {
+          rafRef.current = requestAnimationFrame(animate);
+        }
+      };
+
+      rafRef.current = requestAnimationFrame(animate);
+
+      return () => {
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+        }
+      };
+    } else {
+      setDisplayRiskScore(0);
+    }
+  }, [latestResult?.canDiagnose, latestResult?.riskScore]);
 
   const handleSend = async (text?: string) => {
     const content = text || inputText.trim();
@@ -121,19 +154,36 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
                   <Activity className="w-4 h-4 text-white" />
                   <span className="text-sm font-semibold text-white">健康风险评估</span>
                 </div>
-                <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", riskCfg.bg, riskCfg.color)}>
-                  {riskCfg.label}
-                </span>
+                {latestResult.canDiagnose ? (
+                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", riskCfg.bg, riskCfg.color)}>
+                    {riskCfg.label}
+                  </span>
+                ) : (
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-white/20 text-white">
+                    评估中
+                  </span>
+                )}
               </div>
-              <div className="flex items-end gap-3">
-                <div className="text-3xl font-bold text-white">{latestResult.riskScore}</div>
-                <div className="flex-1 h-2 bg-white/20 rounded-full overflow-hidden">
-                  <div
-                    className={cn("h-full bg-gradient-to-r rounded-full transition-all duration-700", riskCfg.bar)}
-                    style={{ width: `${latestResult.riskScore}%` }}
-                  />
+              {latestResult.canDiagnose ? (
+                <>
+                  <div className="flex items-end gap-3">
+                    <div className="text-4xl font-bold text-white tabular-nums">{displayRiskScore}</div>
+                    <div className="flex-1 h-3 bg-white/20 rounded-full overflow-hidden">
+                      <div
+                        className={cn("h-full bg-gradient-to-r rounded-full shadow-lg", riskCfg.bar)}
+                        style={{ width: `${displayRiskScore}%`, transition: "width 0.1s ease-out" }}
+                      />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-3 bg-white/20 rounded-full overflow-hidden">
+                    <div className="h-full w-1/3 bg-white/40 rounded-full animate-pulse" />
+                  </div>
+                  <span className="text-xs text-blue-100">收集中...</span>
                 </div>
-              </div>
+              )}
               <p className="text-xs text-blue-100 mt-2">{latestResult.riskSummary}</p>
             </div>
           )}
@@ -186,8 +236,8 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
                   )}>
                     {msg.content}
                   </div>
-                  {/* AI消息附带身体结构图 */}
-                  {msg.result?.isPhysical && msg.result.affectedAreas && msg.result.affectedAreas.length > 0 && (
+                  {/* AI消息附带身体结构图（仅诊断后显示） */}
+                  {msg.result?.canDiagnose && msg.result.isPhysical && msg.result.affectedAreas && msg.result.affectedAreas.length > 0 && (
                     <div className="mt-2 bg-white rounded-xl p-3 shadow-sm border border-blue-100">
                       <div className="flex items-center gap-1.5 mb-2">
                         <Activity className="w-3.5 h-3.5 text-blue-500" />
@@ -218,8 +268,8 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
                       )}
                     </div>
                   )}
-                  {/* 心理问题提示 */}
-                  {msg.result && !msg.result.isPhysical && msg.result.identifiedSymptoms.length > 0 && (
+                  {/* 心理问题提示（仅诊断后显示） */}
+                  {msg.result?.canDiagnose && !msg.result.isPhysical && msg.result.identifiedSymptoms.length > 0 && (
                     <div className="mt-2 bg-pink-50 rounded-xl p-3 border border-pink-100">
                       <div className="flex items-center gap-1.5">
                         <Brain className="w-3.5 h-3.5 text-pink-500" />
@@ -374,7 +424,7 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
           </div>
 
           {/* 附近医院 */}
-          {latestResult && latestResult.riskLevel !== "low" && (
+          {latestResult?.canDiagnose && latestResult.riskLevel !== "low" && (
             <div className="bg-white rounded-2xl p-4">
               <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-1.5">
                 <MapPin className="w-4 h-4 text-primary-500" /> 附近推荐医院
