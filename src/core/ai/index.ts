@@ -14,6 +14,8 @@
 // 类型
 export type {
   SymptomAnalysisResult,
+  HealthChatResult,
+  HealthTimelineEntry,
   FoodAnalysisResult,
   ChatResult,
   VideoSubtitleResult,
@@ -23,7 +25,7 @@ export type {
 } from "./types";
 
 // 健康风险
-export { analyzeSymptoms } from "./health";
+export { analyzeSymptoms, healthChat, createTimelineEntry, symptomList } from "./health";
 
 // 生活风险
 export { analyzeFoodLabel } from "./food";

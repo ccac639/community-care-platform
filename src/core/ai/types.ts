@@ -1,6 +1,6 @@
 // 统一AI能力层类型定义
 
-// 健康风险
+// 健康风险 — 旧的初筛结果（保留兼容）
 export interface SymptomAnalysisResult {
   diseases: {
     id: string;
@@ -9,6 +9,29 @@ export interface SymptomAnalysisResult {
     probability: number;
     affectedAreas: string[];
   }[];
+}
+
+// 健康风险 — 聊天式健康分析
+export interface HealthChatResult {
+  reply: string;
+  identifiedSymptoms: string[];
+  riskLevel: "low" | "medium" | "high";
+  riskScore: number;
+  riskSummary: string;
+  isPhysical: boolean;
+  affectedAreas?: string[];
+  possibleDiseases?: { name: string; probability: number }[];
+  timestamp: number;
+}
+
+// 健康风险 — 时间轴记录
+export interface HealthTimelineEntry {
+  id: string;
+  timestamp: number;
+  type: "symptom" | "assessment" | "alert";
+  title: string;
+  desc: string;
+  riskLevel: "low" | "medium" | "high";
 }
 
 // 生活风险

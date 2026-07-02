@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { ArrowLeft, Stethoscope, Search, MapPin, ChevronDown, ChevronUp, Activity, AlertCircle, Navigation, Phone, Crosshair, Map as MapIcon, Building2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { ArrowLeft, Send, Stethoscope, MapPin, ChevronRight, Activity, AlertCircle, Navigation, Phone, Crosshair, Map as MapIcon, Clock, Heart, Brain, Eye, Shield } from "lucide-react";
 import { cn } from "../lib/utils";
 import { hospitals as staticHospitals, type Hospital } from "../data/mockData";
-import { analyzeSymptoms, type SymptomAnalysisResult } from "../core/ai";
+import { healthChat, createTimelineEntry, symptomList, type HealthChatResult, type HealthTimelineEntry } from "../core/ai";
 import AMapView from "../components/AMapView";
 import SkeletonView from "../components/SkeletonView";
 
@@ -14,34 +14,74 @@ interface HospitalWithDistance extends Hospital {
   realDistance?: number;
 }
 
-const symptoms = [
-  "易骨折", "蓝巩膜", "听力下降", "关节松弛", "身材矮小",
-  "骨骼畸形", "皮肤白皙", "视力异常", "肌肉无力",
-];
+interface ChatMessage {
+  id: string;
+  role: "user" | "ai";
+  content: string;
+  result?: HealthChatResult;
+}
+
+const riskConfig = {
+  low: { color: "text-green-600", bg: "bg-green-50", border: "border-green-200", bar: "from-green-400 to-emerald-500", label: "低风险", icon: Shield },
+  medium: { color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200", bar: "from-amber-400 to-orange-500", label: "中风险", icon: AlertCircle },
+  high: { color: "text-red-600", bg: "bg-red-50", border: "border-red-200", bar: "from-red-400 to-rose-500", label: "高风险", icon: AlertCircle },
+};
+
+const timelineIcon = {
+  symptom: { icon: Heart, color: "text-red-500", bg: "bg-red-50" },
+  assessment: { icon: Activity, color: "text-blue-500", bg: "bg-blue-50" },
+  alert: { icon: AlertCircle, color: "text-orange-500", bg: "bg-orange-50" },
+};
 
 export default function MedicalPage({ onBack }: MedicalPageProps) {
-  const [step, setStep] = useState<"input" | "analyzing" | "result">("input");
-  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { id: "init", role: "ai", content: "您好，我是AI健康助手。请描述您目前的不适症状，我会通过对话帮您分析健康状况。您也可以点击下方的快捷症状标签。" },
+  ]);
+  const [inputText, setInputText] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [allSymptoms, setAllSymptoms] = useState<string[]>([]);
+  const [timeline, setTimeline] = useState<HealthTimelineEntry[]>([]);
+  const [latestResult, setLatestResult] = useState<HealthChatResult | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [mapInitialHospitalId, setMapInitialHospitalId] = useState<string | null>(null);
-  const [analysisResult, setAnalysisResult] = useState<SymptomAnalysisResult | null>(null);
-  const [expandedDisease, setExpandedDisease] = useState<string | null>(null);
-  const [nearbyHospitals, setNearbyHospitals] = useState<HospitalWithDistance[]>(staticHospitals);
-  const [userLocated, setUserLocated] = useState(false);
+  const [nearbyHospitals] = useState<HospitalWithDistance[]>(staticHospitals);
+  const [activeTab, setActiveTab] = useState<"chat" | "timeline" | "symptoms">("chat");
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const toggleSymptom = (s: string) => {
-    setSelectedSymptoms((prev) =>
-      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
-    );
-  };
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping]);
 
-  const handleAnalyze = async () => {
-    if (selectedSymptoms.length === 0) return;
-    setStep("analyzing");
-    const result = await analyzeSymptoms(selectedSymptoms);
-    setAnalysisResult(result);
-    setExpandedDisease(result.diseases[0]?.id || null);
-    setStep("result");
+  const handleSend = async (text?: string) => {
+    const content = text || inputText.trim();
+    if (!content || isTyping) return;
+
+    const userMsg: ChatMessage = { id: Date.now().toString(), role: "user", content };
+    setMessages((prev) => [...prev, userMsg]);
+    setInputText("");
+    setIsTyping(true);
+
+    const history = messages.map((m) => ({ role: m.role, content: m.content }));
+    const result = await healthChat(content, history);
+
+    const aiMsg: ChatMessage = {
+      id: (Date.now() + 1).toString(),
+      role: "ai",
+      content: result.reply,
+      result,
+    };
+    setMessages((prev) => [...prev, aiMsg]);
+    setLatestResult(result);
+
+    // 更新累计症状
+    const newSymptoms = [...new Set([...allSymptoms, ...result.identifiedSymptoms])];
+    setAllSymptoms(newSymptoms);
+
+    // 添加时间轴记录
+    const entry = createTimelineEntry(result, allSymptoms);
+    setTimeline((prev) => [...prev, entry]);
+
+    setIsTyping(false);
   };
 
   const handleOpenMap = (hospitalId?: string) => {
@@ -49,251 +89,344 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
     setShowMap(true);
   };
 
-  const topDisease = analysisResult?.diseases[0];
+  const formatTime = (ts: number) => {
+    const d = new Date(ts);
+    return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
+  };
+
+  const riskCfg = latestResult ? riskConfig[latestResult.riskLevel] : riskConfig.low;
   const nearestHospital = nearbyHospitals[0];
 
   return (
     <div className="animate-fade-in pb-24 min-h-screen bg-gray-50">
-      <div className="bg-white px-4 py-3 flex items-center gap-3 sticky top-0 z-30 border-b border-gray-100">
-        <button onClick={onBack} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 btn-pressable">
-          <ArrowLeft className="w-5 h-5 text-gray-700" />
-        </button>
-        <h1 className="text-lg font-bold text-gray-800">罕见病诊疗导航</h1>
+      {/* Header */}
+      <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 px-4 pt-12 pb-4 rounded-b-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -translate-y-16 translate-x-16" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-3">
+            <button onClick={onBack} className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 btn-pressable">
+              <ArrowLeft className="w-5 h-5 text-white" />
+            </button>
+            <div className="flex items-center gap-2">
+              <Stethoscope className="w-6 h-6 text-white" />
+              <h1 className="text-xl font-bold text-white">健康风险 · AI诊疗</h1>
+            </div>
+          </div>
+
+          {/* 健康风险评估卡片 */}
+          {latestResult && (
+            <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-white" />
+                  <span className="text-sm font-semibold text-white">健康风险评估</span>
+                </div>
+                <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", riskCfg.bg, riskCfg.color)}>
+                  {riskCfg.label}
+                </span>
+              </div>
+              <div className="flex items-end gap-3">
+                <div className="text-3xl font-bold text-white">{latestResult.riskScore}</div>
+                <div className="flex-1 h-2 bg-white/20 rounded-full overflow-hidden">
+                  <div
+                    className={cn("h-full bg-gradient-to-r rounded-full transition-all duration-700", riskCfg.bar)}
+                    style={{ width: `${latestResult.riskScore}%` }}
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-blue-100 mt-2">{latestResult.riskSummary}</p>
+            </div>
+          )}
+        </div>
       </div>
 
-      {step === "input" && (
-        <div className="px-4 pt-4">
-          <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-4 mb-4 text-white">
-            <div className="flex items-center gap-2 mb-2">
-              <Stethoscope className="w-5 h-5" />
-              <h2 className="font-bold">AI症状初筛</h2>
-            </div>
-            <p className="text-sm text-blue-100">选择您或家人的症状，AI将辅助分析可能的罕见病方向，结果仅供参考，请以医生诊断为准。</p>
-          </div>
-
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">请选择症状（可多选）</h3>
-          <div className="flex flex-wrap gap-2 mb-6">
-            {symptoms.map((s) => (
-              <button
-                key={s}
-                onClick={() => toggleSymptom(s)}
-                className={cn(
-                  "px-3.5 py-2 rounded-full text-sm font-medium btn-pressable transition-all",
-                  selectedSymptoms.includes(s)
-                    ? "bg-primary-500 text-white shadow-lg shadow-primary-200/50"
-                    : "bg-white text-gray-600 border border-gray-200"
-                )}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-
+      {/* Tab切换 */}
+      <div className="px-4 pt-3">
+        <div className="flex gap-1 p-1 bg-gray-100 rounded-xl">
           <button
-            onClick={handleAnalyze}
-            disabled={selectedSymptoms.length === 0}
-            className={cn(
-              "w-full py-3 rounded-xl font-medium btn-pressable transition-all flex items-center justify-center gap-2",
-              selectedSymptoms.length > 0
-                ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-200/50"
-                : "bg-gray-200 text-gray-400 cursor-not-allowed"
-            )}
+            onClick={() => setActiveTab("chat")}
+            className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition-all", activeTab === "chat" ? "bg-white shadow-sm text-primary-600" : "text-gray-500")}
           >
-            <Search className="w-5 h-5" /> 开始AI初筛（已选{selectedSymptoms.length}项）
+            AI对话
           </button>
+          <button
+            onClick={() => setActiveTab("timeline")}
+            className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-1", activeTab === "timeline" ? "bg-white shadow-sm text-primary-600" : "text-gray-500")}
+          >
+            <Clock className="w-3.5 h-3.5" /> 时间轴
+            {timeline.length > 0 && <span className="text-[10px] bg-primary-100 text-primary-600 px-1 rounded">{timeline.length}</span>}
+          </button>
+          <button
+            onClick={() => setActiveTab("symptoms")}
+            className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-1", activeTab === "symptoms" ? "bg-white shadow-sm text-primary-600" : "text-gray-500")}
+          >
+            <Heart className="w-3.5 h-3.5" /> 症状
+            {allSymptoms.length > 0 && <span className="text-[10px] bg-primary-100 text-primary-600 px-1 rounded">{allSymptoms.length}</span>}
+          </button>
+        </div>
+      </div>
 
-          <div className="mt-6 bg-amber-50 rounded-xl p-3 flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-amber-700 leading-relaxed">
-              温馨提示：本工具为AI辅助初筛，不能替代专业医生诊断。如有疑似症状，请及时前往正规医院就诊。
-            </p>
+      {/* AI对话 */}
+      {activeTab === "chat" && (
+        <div className="flex flex-col" style={{ height: "calc(100vh - 280px)" }}>
+          <div className="flex-1 overflow-y-auto px-4 pt-3 space-y-3 pb-2 scrollbar-hide">
+            {messages.map((msg) => (
+              <div key={msg.id} className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}>
+                {msg.role === "ai" && (
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center mr-2 flex-shrink-0">
+                    <Stethoscope className="w-4 h-4 text-white" />
+                  </div>
+                )}
+                <div className="max-w-[78%]">
+                  <div className={cn(
+                    "px-4 py-2.5 rounded-2xl text-sm",
+                    msg.role === "user"
+                      ? "bg-primary-500 text-white rounded-br-md"
+                      : "bg-white text-gray-800 rounded-bl-md shadow-sm"
+                  )}>
+                    {msg.content}
+                  </div>
+                  {/* AI消息附带身体结构图 */}
+                  {msg.result?.isPhysical && msg.result.affectedAreas && msg.result.affectedAreas.length > 0 && (
+                    <div className="mt-2 bg-white rounded-xl p-3 shadow-sm border border-blue-100">
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <Activity className="w-3.5 h-3.5 text-blue-500" />
+                        <span className="text-xs font-semibold text-gray-600">身体结构示意图</span>
+                      </div>
+                      <div className="flex items-center justify-center">
+                        <SkeletonView affectedAreas={msg.result.affectedAreas} />
+                      </div>
+                      {msg.result.possibleDiseases && msg.result.possibleDiseases.length > 0 && (
+                        <div className="mt-2 space-y-1">
+                          {msg.result.possibleDiseases.map((d, i) => (
+                            <div key={i} className="flex items-center justify-between text-xs">
+                              <span className="text-gray-600">{d.name}</span>
+                              <div className="flex items-center gap-1.5">
+                                <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                  <div
+                                    className={cn("h-full rounded-full", d.probability >= 70 ? "bg-red-400" : d.probability >= 40 ? "bg-amber-400" : "bg-green-400")}
+                                    style={{ width: `${d.probability}%` }}
+                                  />
+                                </div>
+                                <span className={cn("font-medium", d.probability >= 70 ? "text-red-600" : d.probability >= 40 ? "text-amber-600" : "text-green-600")}>
+                                  {d.probability}%
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {/* 心理问题提示 */}
+                  {msg.result && !msg.result.isPhysical && msg.result.identifiedSymptoms.length > 0 && (
+                    <div className="mt-2 bg-pink-50 rounded-xl p-3 border border-pink-100">
+                      <div className="flex items-center gap-1.5">
+                        <Brain className="w-3.5 h-3.5 text-pink-500" />
+                        <span className="text-xs text-pink-700">此为心理健康问题，无需身体结构检查</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+            {isTyping && (
+              <div className="flex justify-start">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center mr-2">
+                  <Stethoscope className="w-4 h-4 text-white" />
+                </div>
+                <div className="bg-white px-4 py-3 rounded-2xl rounded-bl-md shadow-sm flex gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+                  ))}
+                </div>
+              </div>
+            )}
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* 快捷症状 */}
+          <div className="px-4 mb-2">
+            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+              {symptomList.slice(0, 8).map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => handleSend(s.label)}
+                  disabled={isTyping}
+                  className={cn(
+                    "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border btn-pressable",
+                    s.category === "身体" ? "border-blue-200 text-blue-600 bg-blue-50" : "border-pink-200 text-pink-600 bg-pink-50"
+                  )}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 输入框 */}
+          <div className="px-4 flex items-center gap-2 bg-white rounded-2xl p-2 shadow-sm mx-4">
+            <input
+              type="text"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              disabled={isTyping}
+              placeholder="描述您的症状..."
+              className="flex-1 px-3 py-2 text-sm outline-none bg-transparent"
+            />
+            <button
+              onClick={() => handleSend()}
+              disabled={!inputText.trim() || isTyping}
+              className={cn(
+                "w-9 h-9 rounded-full flex items-center justify-center btn-pressable transition-all",
+                inputText.trim() && !isTyping ? "bg-primary-500 text-white" : "bg-gray-100 text-gray-400"
+              )}
+            >
+              <Send className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}
 
-      {step === "analyzing" && (
-        <div className="px-4 pt-12 flex flex-col items-center">
-          <div className="w-20 h-20 relative mb-6">
-            <div className="absolute inset-0 bg-blue-100 rounded-full animate-ping opacity-30" />
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-              <Activity className="w-10 h-10 text-white animate-pulse" />
+      {/* 时间轴 */}
+      {activeTab === "timeline" && (
+        <div className="px-4 pt-3">
+          {timeline.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+              <Clock className="w-12 h-12 mb-3 opacity-30" />
+              <p className="text-sm">暂无记录，开始对话后这里会显示健康过程</p>
             </div>
-          </div>
-          <p className="text-gray-800 font-semibold text-lg">AI正在深度分析...</p>
-          <p className="text-sm text-gray-500 mt-2">正在匹配症状数据库（含8,000+罕见病）</p>
-          <div className="w-64 h-2 bg-gray-200 rounded-full mt-6 overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full animate-pulse" style={{ width: "70%" }} />
-          </div>
-        </div>
-      )}
-
-      {step === "result" && analysisResult && (
-        <div className="px-4 pt-4">
-          <div className="bg-white rounded-2xl p-4 mb-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-bold text-gray-800">初筛结果</h2>
-              <span className="text-xs text-gray-400">仅供参考</span>
-            </div>
-
-            <div className="flex items-center justify-center mb-3">
-              <SkeletonView affectedAreas={topDisease.affectedAreas} />
-            </div>
-
-            <div className="space-y-3">
-              {analysisResult.diseases.map((d) => {
-                const isExpanded = expandedDisease === d.id;
-                const isTop = d.probability >= 50;
+          ) : (
+            <div className="relative pl-6">
+              <div className="absolute left-2 top-2 bottom-2 w-0.5 bg-gray-200" />
+              {timeline.map((entry) => {
+                const cfg = timelineIcon[entry.type];
+                const rCfg = riskConfig[entry.riskLevel];
+                const Icon = cfg.icon;
                 return (
-                  <div
-                    key={d.id}
-                    className={cn(
-                      "rounded-xl border p-3 transition-all",
-                      isTop ? "border-red-200 bg-red-50/50" : "border-gray-100 bg-gray-50"
-                    )}
-                  >
-                    <button
-                      onClick={() => setExpandedDisease(isExpanded ? null : d.id)}
-                      className="w-full flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={cn(
-                          "w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold",
-                          isTop ? "bg-red-500 text-white" : "bg-gray-200 text-gray-500"
-                        )}>
-                          {d.probability}%
-                        </div>
-                        <div className="text-left">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-gray-800 text-sm">{d.name}</span>
-                            {isTop && <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded">高匹配</span>}
-                          </div>
-                          <p className="text-xs text-gray-500">{d.alias}</p>
-                        </div>
+                  <div key={entry.id} className="relative mb-4">
+                    <div className={cn("absolute -left-5 w-4 h-4 rounded-full flex items-center justify-center", cfg.bg)}>
+                      <Icon className={cn("w-2.5 h-2.5", cfg.color)} />
+                    </div>
+                    <div className="bg-white rounded-xl p-3 shadow-sm ml-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-semibold text-gray-800">{entry.title}</span>
+                        <span className="text-[10px] text-gray-400">{formatTime(entry.timestamp)}</span>
                       </div>
-                      {isExpanded ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
-                    </button>
-
-                    {isExpanded && (
-                      <div className="mt-3 pt-3 border-t border-gray-200/50 space-y-2 animate-fade-in">
-                        <p className="text-xs text-gray-600 leading-relaxed">
-                          {d.name}（{d.alias}）是一种由于基因缺陷导致的罕见遗传性疾病，主要表现为上述相关症状。建议尽快到具备罕见病诊疗能力的三甲医院就诊。
-                        </p>
-                      </div>
-                    )}
+                      <p className="text-xs text-gray-500">{entry.desc}</p>
+                      <span className={cn("inline-block mt-1.5 text-[10px] px-1.5 py-0.5 rounded font-medium", rCfg.bg, rCfg.color)}>
+                        {rCfg.label}
+                      </span>
+                    </div>
                   </div>
                 );
               })}
             </div>
+          )}
+        </div>
+      )}
+
+      {/* 症状列表 */}
+      {activeTab === "symptoms" && (
+        <div className="px-4 pt-3">
+          <div className="bg-white rounded-2xl p-4 mb-4">
+            <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-1.5">
+              <Heart className="w-4 h-4 text-red-500" /> 已识别症状
+            </h3>
+            {allSymptoms.length === 0 ? (
+              <p className="text-sm text-gray-400 py-4 text-center">暂未识别到症状，请在对话中描述您的不适</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {allSymptoms.map((s, i) => (
+                  <span key={i} className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium border border-blue-100">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="bg-white rounded-2xl p-4 mb-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-primary-500" />
-                附近推荐医院
+            <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-1.5">
+              <Eye className="w-4 h-4 text-indigo-500" /> 快捷症状参考
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              {symptomList.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => { setActiveTab("chat"); handleSend(s.label); }}
+                  className={cn(
+                    "flex items-center gap-2 p-2.5 rounded-xl border btn-pressable text-left",
+                    s.category === "身体" ? "border-blue-100 bg-blue-50/50" : "border-pink-100 bg-pink-50/50"
+                  )}
+                >
+                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", s.category === "身体" ? "bg-blue-100" : "bg-pink-100")}>
+                    {s.category === "身体" ? <Heart className="w-4 h-4 text-blue-500" /> : <Brain className="w-4 h-4 text-pink-500" />}
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-gray-700">{s.label}</div>
+                    <div className="text-[10px] text-gray-400">{s.category}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 附近医院 */}
+          {latestResult && latestResult.riskLevel !== "low" && (
+            <div className="bg-white rounded-2xl p-4">
+              <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-primary-500" /> 附近推荐医院
               </h3>
+              <div className="space-y-2">
+                {nearbyHospitals.slice(0, 3).map((h) => (
+                  <div key={h.id} className="flex items-center gap-3 p-2.5 bg-gray-50 rounded-xl border border-gray-100">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-gray-800">{h.name}</span>
+                        <span className="text-[10px] text-white bg-primary-500 px-1.5 py-0.5 rounded">{h.level}</span>
+                      </div>
+                      <div className="text-xs text-gray-500 mt-0.5 truncate">{h.address} · {h.distance}</div>
+                    </div>
+                    <button
+                      onClick={() => handleOpenMap(h.id)}
+                      className="flex-shrink-0 px-3 py-1.5 bg-primary-500 text-white rounded-lg text-xs font-medium btn-pressable flex items-center gap-1"
+                    >
+                      <Navigation className="w-3 h-3" /> 导航
+                    </button>
+                  </div>
+                ))}
+              </div>
               <button
                 onClick={() => handleOpenMap()}
-                className="flex items-center gap-1 text-xs text-primary-600 font-medium btn-pressable"
+                className="w-full mt-2 py-2.5 bg-gray-50 text-gray-600 rounded-xl text-sm font-medium btn-pressable flex items-center justify-center gap-1.5 border border-gray-100"
               >
-                <MapIcon className="w-3.5 h-3.5" /> 地图视图
+                <MapIcon className="w-4 h-4" /> 查看地图视图
               </button>
             </div>
-
-            {userLocated ? (
-              <div className="flex items-center gap-1.5 mb-3 text-xs text-green-600 bg-green-50 rounded-lg px-2.5 py-1.5">
-                <Crosshair className="w-3.5 h-3.5" />
-                已定位 · 按距离排序，最近医院：{nearestHospital?.name}（{nearestHospital?.distance}）
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5 mb-3 text-xs text-gray-500 bg-gray-50 rounded-lg px-2.5 py-1.5">
-                <MapPin className="w-3.5 h-3.5" />
-                打开地图可定位您的位置，查找最近医院
-              </div>
-            )}
-
-            <div className="space-y-2">
-              {nearbyHospitals.map((hospital, index) => {
-                const isNearest = index === 0 && userLocated;
-                return (
-                  <div
-                    key={hospital.id}
-                    className={cn(
-                      "rounded-xl p-3 border transition-all",
-                      isNearest ? "border-green-200 bg-green-50/50" : "border-gray-100 bg-gray-50/50"
-                    )}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-gray-800 text-sm">{hospital.name}</span>
-                          <span className="px-1.5 py-0.5 bg-red-50 text-red-600 text-[10px] rounded font-medium">{hospital.level}</span>
-                          {isNearest && (
-                            <span className="px-1.5 py-0.5 bg-green-500 text-white text-[10px] rounded font-medium">最近</span>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                          <MapPin className="w-3 h-3 flex-shrink-0" />
-                          <span className="truncate">{hospital.address}</span>
-                          {userLocated && <span className="text-primary-600 font-medium flex-shrink-0">· {hospital.distance}</span>}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 mt-2.5">
-                      <a
-                        href={`tel:${hospital.phone}`}
-                        className="flex-1 flex items-center justify-center gap-1 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg text-xs font-medium btn-pressable"
-                      >
-                        <Phone className="w-3.5 h-3.5" /> 电话
-                      </a>
-                      <button
-                        onClick={() => handleOpenMap(hospital.id)}
-                        className={cn(
-                          "flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-xs font-medium btn-pressable text-white",
-                          isNearest ? "bg-green-500" : "bg-primary-500"
-                        )}
-                      >
-                        <Navigation className="w-3.5 h-3.5" /> 导航
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="bg-blue-50 rounded-xl p-3 flex items-start gap-2 mb-4">
-            <AlertCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-blue-700 leading-relaxed">
-              建议：以上结果基于症状匹配，不能替代医学诊断。请尽快导航至专业医疗机构进一步检查。
-            </p>
-          </div>
-
-          <button
-            onClick={() => { setStep("input"); setSelectedSymptoms([]); setUserLocated(false); setNearbyHospitals(staticHospitals); setAnalysisResult(null); }}
-            className="w-full py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium btn-pressable"
-          >
-            重新初筛
-          </button>
+          )}
         </div>
       )}
 
+      {/* 地图弹窗 */}
       {showMap && (
         <div className="fixed inset-0 z-[100] bg-black/50 flex items-end">
-          <div className="w-full bg-white rounded-t-2xl overflow-hidden animate-slide-up flex flex-col" style={{ height: "85vh" }}>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">
-              <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-red-500" /> 附近推荐医院
-              </h3>
-              <button onClick={() => { setShowMap(false); setMapInitialHospitalId(null); }} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 btn-pressable text-gray-500">
-                关闭
+          <div className="bg-white w-full rounded-t-2xl flex flex-col" style={{ height: "85vh" }}>
+            <div className="flex items-center justify-between p-3 border-b border-gray-100 flex-shrink-0">
+              <h3 className="font-bold text-gray-800">附近医院导航</h3>
+              <button
+                onClick={() => { setShowMap(false); setMapInitialHospitalId(null); }}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 btn-pressable"
+              >
+                <ArrowLeft className="w-5 h-5 text-gray-600 rotate-90" />
               </button>
             </div>
             <div className="flex-1 relative">
               <AMapView
-                onHospitalsUpdate={setNearbyHospitals}
-                onUserLocation={setUserLocated}
+                hospitals={nearbyHospitals}
                 initialSelectedHospitalId={mapInitialHospitalId}
+                onClose={() => { setShowMap(false); setMapInitialHospitalId(null); }}
               />
             </div>
           </div>
