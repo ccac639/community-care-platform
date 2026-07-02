@@ -47,12 +47,33 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
   const [mapInitialHospitalId, setMapInitialHospitalId] = useState<string | null>(null);
   const [nearbyHospitals] = useState<HospitalWithDistance[]>(staticHospitals);
   const [activeTab, setActiveTab] = useState<"chat" | "timeline" | "symptoms">("chat");
+  const [messageTimestamps, setMessageTimestamps] = useState<number[]>([]);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
+
+  const MAX_MESSAGES = 20;
+  const TIME_WINDOW_MS = 60 * 1000;
+
+  const getRecentMessageCount = () => {
+    const now = Date.now();
+    return messageTimestamps.filter((ts) => now - ts < TIME_WINDOW_MS).length;
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setMessageTimestamps((prev) => prev.filter((ts) => now - ts < TIME_WINDOW_MS));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const recentCount = getRecentMessageCount();
+  const canSend = recentCount < MAX_MESSAGES;
 
   useEffect(() => {
     if (latestResult?.canDiagnose) {
@@ -87,7 +108,9 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
 
   const handleSend = async (text?: string) => {
     const content = text || inputText.trim();
-    if (!content || isTyping) return;
+    if (!content || isTyping || !canSend) return;
+
+    setMessageTimestamps((prev) => [...prev, Date.now()]);
 
     const userMsg: ChatMessage = { id: Date.now().toString(), role: "user", content };
     setMessages((prev) => [...prev, userMsg]);
@@ -295,6 +318,14 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
             <div ref={chatEndRef} />
           </div>
 
+          {!canSend && (
+            <div className="px-4 mb-2">
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-2 text-center">
+                <span className="text-xs text-amber-700">对话过于频繁，请稍等片刻再发送</span>
+              </div>
+            </div>
+          )}
+
           {/* 快捷症状 */}
           <div className="px-4 mb-2">
             <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
@@ -302,10 +333,14 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
                 <button
                   key={s.id}
                   onClick={() => handleSend(s.label)}
-                  disabled={isTyping}
+                  disabled={isTyping || !canSend}
                   className={cn(
-                    "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border btn-pressable",
-                    s.category === "身体" ? "border-blue-200 text-blue-600 bg-blue-50" : "border-pink-200 text-pink-600 bg-pink-50"
+                    "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border btn-pressable transition-all",
+                    (isTyping || !canSend)
+                      ? "border-gray-200 text-gray-400 bg-gray-100 cursor-not-allowed"
+                      : s.category === "身体"
+                      ? "border-blue-200 text-blue-600 bg-blue-50"
+                      : "border-pink-200 text-pink-600 bg-pink-50"
                   )}
                 >
                   {s.label}
@@ -320,17 +355,20 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              disabled={isTyping}
-              placeholder="描述您的症状..."
-              className="flex-1 px-3 py-2 text-sm outline-none bg-transparent"
+              onKeyDown={(e) => e.key === "Enter" && canSend && handleSend()}
+              disabled={isTyping || !canSend}
+              placeholder={canSend ? "描述您的症状..." : "对话过于频繁，请稍等片刻"}
+              className={cn(
+                "flex-1 px-3 py-2 text-sm outline-none bg-transparent transition-all",
+                (isTyping || !canSend) && "text-gray-400 cursor-not-allowed"
+              )}
             />
             <button
               onClick={() => handleSend()}
-              disabled={!inputText.trim() || isTyping}
+              disabled={!inputText.trim() || isTyping || !canSend}
               className={cn(
                 "w-9 h-9 rounded-full flex items-center justify-center btn-pressable transition-all",
-                inputText.trim() && !isTyping ? "bg-primary-500 text-white" : "bg-gray-100 text-gray-400"
+                inputText.trim() && !isTyping && canSend ? "bg-primary-500 text-white" : "bg-gray-100 text-gray-400"
               )}
             >
               <Send className="w-4 h-4" />

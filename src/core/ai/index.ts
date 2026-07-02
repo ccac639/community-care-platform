@@ -22,6 +22,10 @@ export type {
   DisasterRiskResult,
   CommunityRiskResult,
   WeatherData,
+  EmotionType,
+  EmotionRecognitionResult,
+  EmotionRecord,
+  EmotionDiaryEntry,
 } from "./types";
 
 // 健康风险
@@ -34,7 +38,7 @@ export { analyzeFoodLabel } from "./food";
 export { assessDisasterRisk } from "./disaster";
 
 // 心理风险
-export { chat, generateVideoSubtitle } from "./psychology";
+export { chat, generateVideoSubtitle, recognizeEmotionFromText, createEmotionRecord, generateEmotionDiary, emotionColors } from "./psychology";
 
 // 社区风险
 export { getCommunityRiskIndex } from "./community";

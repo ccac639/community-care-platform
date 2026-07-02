@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
-import { AlertTriangle, Radio, Home, MapPin, Phone, Shield, Activity, CloudLightning, ArrowRight, Loader2 } from "lucide-react";
+import { AlertTriangle, Radio, Home, MapPin, Phone, Shield, Activity, CloudLightning, ArrowRight, Loader2, ChevronRight } from "lucide-react";
 import { cn } from "../lib/utils";
 import { assessDisasterRisk, type DisasterRiskResult } from "../core/ai";
+import { shelters } from "../data/mockData";
+import ShelterMapView from "../components/ShelterMapView";
 
 interface DisasterPageProps {
   onBack?: () => void;
@@ -31,6 +33,7 @@ const levelConfig = {
 export default function DisasterPage({ onBack }: DisasterPageProps) {
   const [riskData, setRiskData] = useState<DisasterRiskResult | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showShelterMap, setShowShelterMap] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -144,20 +147,20 @@ export default function DisasterPage({ onBack }: DisasterPageProps) {
             <h3 className="font-bold text-gray-800">社区避难场所</h3>
           </div>
           <div className="space-y-2">
-            <div className="bg-gray-50 rounded-xl p-3 flex items-center gap-3 border border-gray-100">
-              <MapPin className="w-5 h-5 text-primary-500 flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-gray-800">社区公园应急避难所</div>
-                <div className="text-xs text-gray-500 truncate">距您 500m · 可容纳 2000 人</div>
-              </div>
-            </div>
-            <div className="bg-gray-50 rounded-xl p-3 flex items-center gap-3 border border-gray-100">
-              <MapPin className="w-5 h-5 text-primary-500 flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-gray-800">中心小学体育馆</div>
-                <div className="text-xs text-gray-500 truncate">距您 1.2km · 可容纳 5000 人</div>
-              </div>
-            </div>
+            {shelters.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => setShowShelterMap(true)}
+                className="w-full bg-gray-50 rounded-xl p-3 flex items-center gap-3 border border-gray-100 btn-pressable text-left hover:bg-gray-100 transition-colors"
+              >
+                <MapPin className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-gray-800">{s.name}</div>
+                  <div className="text-xs text-gray-500 truncate">可容纳 {s.capacity.toLocaleString()} 人</div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              </button>
+            ))}
           </div>
         </div>
 
@@ -173,6 +176,29 @@ export default function DisasterPage({ onBack }: DisasterPageProps) {
           </div>
         </div>
       </div>
+
+      {/* 避难所地图弹窗 */}
+      {showShelterMap && (
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-end">
+          <div className="bg-white w-full rounded-t-2xl flex flex-col" style={{ height: "85vh" }}>
+            <div className="flex items-center justify-between p-3 border-b border-gray-100 flex-shrink-0">
+              <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                <Home className="w-5 h-5 text-green-500" />
+                附近避难所导航
+              </h3>
+              <button
+                onClick={() => setShowShelterMap(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 btn-pressable"
+              >
+                <ArrowRight className="w-5 h-5 text-gray-600 rotate-90" />
+              </button>
+            </div>
+            <div className="flex-1 relative">
+              <ShelterMapView onClose={() => setShowShelterMap(false)} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,16 +1,35 @@
 import { useState, useRef, useEffect } from "react";
-import { ArrowLeft, Video, MessageCircle, Upload, X, Mic, MicOff, PhoneOff, Send, Sparkles, Heart, Play, Pause, Volume2, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Video, MessageCircle, Upload, X, Mic, MicOff, PhoneOff, Send, Sparkles, Heart, Play, Pause, Volume2, Image as ImageIcon, BookOpen, Calendar, Clock, AlertTriangle, Sun, CloudRain, Cloud, Snowflake, Wind } from "lucide-react";
 import { cn, formatTime } from "../lib/utils";
-import { quickPhrases, type Message } from "../data/mockData";
-import { chat, generateVideoSubtitle } from "../core/ai";
+import { quickPhrases } from "../data/mockData";
+import { chat, generateVideoSubtitle, createEmotionRecord, generateEmotionDiary, emotionColors, type EmotionRecord, type EmotionDiaryEntry, type ChatResult } from "../core/ai";
 
 interface CommunityPageProps {
   onBack: () => void;
 }
 
-const initialMessages: Message[] = [
-  { id: "1", role: "ai", content: "你好呀～我是你的AI伙伴小树 🌳，有什么开心或不开心的事，都可以跟我说哦！", time: "刚刚" },
+const initialMessages = [
+  { id: "1", role: "ai" as const, content: "你好呀～我是你的AI情绪陪伴伙伴小树 🌳，有什么开心或不开心的事，都可以跟我说哦！", time: "刚刚" },
 ];
+
+interface ChatMessage {
+  id: string;
+  role: "user" | "ai";
+  content: string;
+  time: string;
+  result?: ChatResult;
+}
+
+const emotionIconMap = {
+  happy: "😊",
+  sad: "😢",
+  anxious: "😰",
+  angry: "😠",
+  lonely: "🥺",
+  hopeful: "🌟",
+  confused: "😕",
+  neutral: "😐",
+};
 
 function VideoCallPage({ avatarUrl, onEnd }: { avatarUrl: string; onEnd: () => void }) {
   const [muted, setMuted] = useState(false);
@@ -53,7 +72,7 @@ function VideoCallPage({ avatarUrl, onEnd }: { avatarUrl: string; onEnd: () => v
           </div>
           <div className="bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full">
             <span className="text-white/90 text-xs flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-yellow-400" /> AI陪伴中
+              <Sparkles className="w-3 h-3 text-yellow-400" /> AI情绪陪伴中
             </span>
           </div>
         </div>
@@ -118,20 +137,32 @@ function VideoCallPage({ avatarUrl, onEnd }: { avatarUrl: string; onEnd: () => v
   );
 }
 
-function TreeHole() {
-  const [mode, setMode] = useState<"video" | "chat">("video");
+function EmotionChat() {
+  const [mode, setMode] = useState<"video" | "chat">("chat");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [inCall, setInCall] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [emotionRecords, setEmotionRecords] = useState<EmotionRecord[]>([]);
+  const [lastEmotion, setLastEmotion] = useState<{ type: string; intensity: number } | null>(null);
+  const [messageTimestamps, setMessageTimestamps] = useState<number[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setMessageTimestamps((prev) => prev.filter((ts) => now - ts < TIME_WINDOW_MS));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleFile = (file: File) => {
     if (!file.type.startsWith("image/")) return;
@@ -140,25 +171,57 @@ function TreeHole() {
     reader.readAsDataURL(file);
   };
 
+  const MAX_MESSAGES = 20;
+  const TIME_WINDOW_MS = 60 * 1000;
+
+  const getRecentMessageCount = () => {
+    const now = Date.now();
+    return messageTimestamps.filter((ts) => now - ts < TIME_WINDOW_MS).length;
+  };
+
   const handleSend = async (text?: string) => {
     const content = text || inputText.trim();
     if (!content) return;
 
-    const userMsg: Message = { id: Date.now().toString(), role: "user", content, time: "刚刚" };
+    const recentCount = getRecentMessageCount();
+    if (recentCount >= MAX_MESSAGES) {
+      return;
+    }
+
+    setMessageTimestamps((prev) => [...prev, Date.now()]);
+
+    const userMsg: ChatMessage = { id: Date.now().toString(), role: "user", content, time: "刚刚" };
     setMessages((prev) => [...prev, userMsg]);
     setInputText("");
     setIsTyping(true);
 
     const result = await chat(content);
-    const aiMsg: Message = {
+    
+    if (result.recognition.isDangerous) {
+      userMsg.result = result;
+    }
+
+    const aiMsg: ChatMessage = {
       id: (Date.now() + 1).toString(),
       role: "ai",
       content: result.content,
       time: "刚刚",
+      result,
     };
     setMessages((prev) => [...prev, aiMsg]);
+
+    if (result.emotion) {
+      setLastEmotion({ type: result.emotion, intensity: result.recognition.emotion.intensity });
+    }
+
+    const record = await createEmotionRecord(content, result);
+    setEmotionRecords((prev) => [...prev, record]);
+
     setIsTyping(false);
   };
+
+  const recentCount = getRecentMessageCount();
+  const canSend = recentCount < MAX_MESSAGES;
 
   if (inCall && avatarUrl) {
     return <VideoCallPage avatarUrl={avatarUrl} onEnd={() => setInCall(false)} />;
@@ -183,9 +246,26 @@ function TreeHole() {
             mode === "chat" ? "bg-white shadow-sm text-primary-600" : "text-gray-500"
           )}
         >
-          <MessageCircle className="w-4 h-4" /> 文字倾诉
+          <MessageCircle className="w-4 h-4" /> 情绪陪伴
         </button>
       </div>
+
+      {lastEmotion && mode === "chat" && (
+        <div className={cn("rounded-xl p-3 mb-3 flex items-center gap-2", emotionColors[lastEmotion.type as keyof typeof emotionColors].bg)}>
+          <span className="text-lg">{emotionIconMap[lastEmotion.type as keyof typeof emotionIconMap]}</span>
+          <div className="flex-1">
+            <div className={cn("text-sm font-semibold", emotionColors[lastEmotion.type as keyof typeof emotionColors].text)}>
+              检测到情绪：{lastEmotion.type === "happy" ? "开心" : lastEmotion.type === "sad" ? "难过" : lastEmotion.type === "anxious" ? "焦虑" : lastEmotion.type === "angry" ? "生气" : lastEmotion.type === "lonely" ? "孤独" : lastEmotion.type === "hopeful" ? "充满希望" : lastEmotion.type === "confused" ? "迷茫" : "平静"}
+            </div>
+            <div className="flex items-center gap-1 mt-0.5">
+              <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div className={cn("h-full rounded-full", emotionColors[lastEmotion.type as keyof typeof emotionColors].gradient)} style={{ width: `${lastEmotion.intensity}%` }} />
+              </div>
+              <span className="text-xs text-gray-500">{lastEmotion.intensity}%</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {mode === "video" && !avatarUrl && (
         <div
@@ -248,7 +328,7 @@ function TreeHole() {
       )}
 
       {mode === "chat" && (
-        <div className="flex flex-col" style={{ height: "calc(100vh - 240px)" }}>
+        <div className="flex flex-col" style={{ height: "calc(100vh - 300px)" }}>
           <div className="flex-1 overflow-y-auto space-y-3 pb-2 scrollbar-hide">
             {messages.map((msg) => (
               <div key={msg.id} className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}>
@@ -265,6 +345,11 @@ function TreeHole() {
                 )}>
                   {msg.content}
                 </div>
+                {msg.result?.recognition.isDangerous && (
+                  <div className="ml-2 flex-shrink-0">
+                    <AlertTriangle className="w-4 h-4 text-red-500 animate-pulse" />
+                  </div>
+                )}
               </div>
             ))}
             {isTyping && (
@@ -282,12 +367,22 @@ function TreeHole() {
             <div ref={chatEndRef} />
           </div>
 
+          {!canSend && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-2 mb-2 text-center">
+              <span className="text-xs text-amber-700">对话过于频繁，请稍等片刻再发送</span>
+            </div>
+          )}
+
           <div className="flex gap-2 mb-2 overflow-x-auto scrollbar-hide pb-1">
             {quickPhrases.map((phrase) => (
               <button
                 key={phrase}
                 onClick={() => handleSend(phrase)}
-                className="flex-shrink-0 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs text-gray-600 btn-pressable"
+                disabled={!canSend}
+                className={cn(
+                  "flex-shrink-0 px-3 py-1.5 rounded-full text-xs btn-pressable transition-all",
+                  canSend ? "bg-white border border-gray-200 text-gray-600" : "bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed"
+                )}
               >
                 {phrase}
               </button>
@@ -299,16 +394,20 @@ function TreeHole() {
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder="说说你的心事..."
-              className="flex-1 px-3 py-2 text-sm outline-none bg-transparent"
+              onKeyDown={(e) => e.key === "Enter" && canSend && handleSend()}
+              placeholder={canSend ? "说说你的心事..." : "对话过于频繁，请稍等片刻"}
+              disabled={!canSend}
+              className={cn(
+                "flex-1 px-3 py-2 text-sm outline-none bg-transparent transition-all",
+                !canSend && "text-gray-400 cursor-not-allowed"
+              )}
             />
             <button
               onClick={() => handleSend()}
-              disabled={!inputText.trim()}
+              disabled={!inputText.trim() || !canSend}
               className={cn(
                 "w-9 h-9 rounded-full flex items-center justify-center btn-pressable transition-all",
-                inputText.trim() ? "bg-primary-500 text-white" : "bg-gray-100 text-gray-400"
+                inputText.trim() && canSend ? "bg-primary-500 text-white" : "bg-gray-100 text-gray-400"
               )}
             >
               <Send className="w-4 h-4" />
@@ -320,7 +419,111 @@ function TreeHole() {
   );
 }
 
+function EmotionDiary({ emotionRecords }: { emotionRecords: EmotionRecord[] }) {
+  const [diary, setDiary] = useState<EmotionDiaryEntry | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadDiary = async () => {
+      setLoading(true);
+      const result = await generateEmotionDiary(emotionRecords);
+      setDiary(result);
+      setLoading(false);
+    };
+    loadDiary();
+  }, [emotionRecords]);
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const weekDays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+    return `${date.getMonth() + 1}月${date.getDate()}日 ${weekDays[date.getDay()]}`;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <Calendar className="w-10 h-10 text-gray-300 mb-2" />
+        <span className="text-sm text-gray-400">AI正在生成今日情绪日记...</span>
+      </div>
+    );
+  }
+
+  if (!diary) return null;
+
+  const cfg = emotionColors[diary.emotion];
+
+  return (
+    <div className="px-4 pt-4 space-y-4">
+      <div className={cn("rounded-2xl p-4", cfg.bg, cfg.border, "border")}>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">{emotionIconMap[diary.emotion]}</span>
+            <div>
+              <div className="text-sm text-gray-500">{formatDate(diary.date)}</div>
+              <div className={cn("text-lg font-bold", cfg.text)}>今日心情</div>
+            </div>
+          </div>
+          <div className={cn("px-3 py-1 rounded-full text-xs font-medium", cfg.bg, cfg.text)}>
+            {diary.emotion === "happy" ? "开心" : diary.emotion === "sad" ? "难过" : diary.emotion === "anxious" ? "焦虑" : diary.emotion === "angry" ? "生气" : diary.emotion === "lonely" ? "孤独" : diary.emotion === "hopeful" ? "充满希望" : diary.emotion === "confused" ? "迷茫" : "平静"}
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+            <span>情绪强度</span>
+            <span>{diary.intensity}%</span>
+          </div>
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className={cn("h-full rounded-full transition-all duration-1000", cfg.gradient)} style={{ width: `${diary.intensity}%` }} />
+          </div>
+        </div>
+
+        <p className={cn("text-sm font-medium", cfg.text)}>{diary.summary}</p>
+      </div>
+
+      <div className="bg-white rounded-2xl p-4 shadow-sm">
+        <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+          <BookOpen className="w-4 h-4 text-purple-500" /> 情绪记录
+        </h3>
+        {diary.content === "今天还没有记录情绪" ? (
+          <p className="text-sm text-gray-400 text-center py-4">今天还没有情绪记录，去聊天页面记录一下吧~</p>
+        ) : (
+          <div className="space-y-2">
+            {diary.content.split("\n").map((line, i) => (
+              <div key={i} className="flex items-start gap-2 text-sm">
+                <Clock className="w-3 h-3 text-gray-400 mt-1 flex-shrink-0" />
+                <span className="text-gray-700">{line}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded-2xl p-4 shadow-sm">
+        <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-yellow-500" /> 暖心建议
+        </h3>
+        <div className="space-y-2">
+          {diary.suggestions.map((suggestion, i) => (
+            <div key={i} className={cn("flex items-start gap-2 p-3 rounded-xl", cfg.bg)}>
+              <span className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold", cfg.text, "bg-white")}>{i + 1}</span>
+              <span className={cn("text-sm", cfg.text)}>{suggestion}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CommunityPage({ onBack }: CommunityPageProps) {
+  const [activeTab, setActiveTab] = useState<"chat" | "diary">("chat");
+  const [emotionRecords, setEmotionRecords] = useState<EmotionRecord[]>([]);
+
+  const handleRecordsUpdate = (records: EmotionRecord[]) => {
+    setEmotionRecords(records);
+  };
+
   return (
     <div className="animate-fade-in pb-24 min-h-screen bg-gray-50">
       <div className="bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 px-4 pt-12 pb-6">
@@ -330,7 +533,7 @@ export default function CommunityPage({ onBack }: CommunityPageProps) {
           </button>
           <div>
             <h1 className="text-xl font-bold text-white">星星树洞</h1>
-            <p className="text-pink-100 text-sm mt-0.5">AI陪伴，温暖守护每一颗心</p>
+            <p className="text-pink-100 text-sm mt-0.5">AI情绪陪伴，温暖守护每一颗心</p>
           </div>
         </div>
 
@@ -352,7 +555,31 @@ export default function CommunityPage({ onBack }: CommunityPageProps) {
         </div>
       </div>
 
-      <TreeHole />
+      <div className="px-4 pt-3">
+        <div className="flex gap-1 p-1 bg-gray-100 rounded-xl">
+          <button
+            onClick={() => setActiveTab("chat")}
+            className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-1", activeTab === "chat" ? "bg-white shadow-sm text-primary-600" : "text-gray-500")}
+          >
+            <MessageCircle className="w-3.5 h-3.5" /> 情绪陪伴
+          </button>
+          <button
+            onClick={() => setActiveTab("diary")}
+            className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-1", activeTab === "diary" ? "bg-white shadow-sm text-primary-600" : "text-gray-500")}
+          >
+            <BookOpen className="w-3.5 h-3.5" /> 情绪日记
+            {emotionRecords.length > 0 && <span className="text-[10px] bg-primary-100 text-primary-600 px-1 rounded">{emotionRecords.length}</span>}
+          </button>
+        </div>
+      </div>
+
+      {activeTab === "chat" && (
+        <EmotionChat />
+      )}
+
+      {activeTab === "diary" && (
+        <EmotionDiary emotionRecords={emotionRecords} />
+      )}
     </div>
   );
 }

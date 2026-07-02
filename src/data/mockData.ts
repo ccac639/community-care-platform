@@ -123,6 +123,55 @@ export const foodAdditives = [
   { name: "安赛蜜", risk: "warning" as const, desc: "人工甜味剂，建议适量食用" },
 ];
 
+export interface Shelter {
+  id: string;
+  name: string;
+  address: string;
+  capacity: number;
+  type: "park" | "school" | "stadium" | "community";
+  lng: number;
+  lat: number;
+}
+
+export const shelters: Shelter[] = [
+  {
+    id: "s1",
+    name: "社区公园应急避难所",
+    address: "社区中心公园内",
+    capacity: 2000,
+    type: "park",
+    lng: 116.412,
+    lat: 39.915,
+  },
+  {
+    id: "s2",
+    name: "中心小学体育馆",
+    address: "社区东路15号",
+    capacity: 5000,
+    type: "school",
+    lng: 116.425,
+    lat: 39.922,
+  },
+  {
+    id: "s3",
+    name: "市民体育中心",
+    address: "社区南路88号",
+    capacity: 8000,
+    type: "stadium",
+    lng: 116.400,
+    lat: 39.930,
+  },
+  {
+    id: "s4",
+    name: "社区文化活动中心",
+    address: "社区西路22号",
+    capacity: 1500,
+    type: "community",
+    lng: 116.418,
+    lat: 39.935,
+  },
+];
+
 export const quickPhrases = [
   "我今天有点不开心",
   "学习压力好大",

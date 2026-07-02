@@ -46,9 +46,44 @@ export interface FoodAnalysisResult {
 }
 
 // 心理风险
+export type EmotionType = "happy" | "sad" | "anxious" | "angry" | "lonely" | "hopeful" | "confused" | "neutral";
+
+export interface EmotionInfo {
+  type: EmotionType;
+  intensity: number;
+  keywords: string[];
+}
+
+export interface EmotionRecognitionResult {
+  emotion: EmotionInfo;
+  isDangerous: boolean;
+  dangerLevel: "none" | "low" | "medium" | "high";
+  warning?: string;
+}
+
+export interface EmotionRecord {
+  id: string;
+  timestamp: number;
+  emotion: EmotionType;
+  intensity: number;
+  message: string;
+  reply?: string;
+}
+
+export interface EmotionDiaryEntry {
+  id: string;
+  date: string;
+  content: string;
+  emotion: EmotionType;
+  intensity: number;
+  summary: string;
+  suggestions: string[];
+}
+
 export interface ChatResult {
   content: string;
-  emotion?: string;
+  emotion?: EmotionType;
+  recognition: EmotionRecognitionResult;
 }
 
 export interface VideoSubtitleResult {
