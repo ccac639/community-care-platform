@@ -26,6 +26,9 @@ export type {
   EmotionRecognitionResult,
   EmotionRecord,
   EmotionDiaryEntry,
+  WelfareRiskResult,
+  RiskTrend,
+  RiskSuggestion,
 } from "./types";
 
 // 健康风险
@@ -45,3 +48,6 @@ export { getCommunityRiskIndex } from "./community";
 
 // 天气
 export { getCurrentWeather } from "./weather";
+
+// 公益风险
+export { calculateWelfareRisk, analyzeRiskTrend, generateSuggestions } from "./welfare";

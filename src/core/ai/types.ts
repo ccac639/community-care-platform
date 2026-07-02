@@ -120,3 +120,40 @@ export interface WeatherData {
   aqiLevel: string;
   feelsLike: number;
 }
+
+// 公益风险
+export interface WelfareRiskResult {
+  score: number;
+  level: "excellent" | "good" | "normal" | "poor";
+  levelLabel: string;
+  levelColor: string;
+  breakdown: {
+    missingChildren: number;
+    distressPeople: number;
+    leftBehindChildren: number;
+    helpEvents: number;
+    aiReviewed: number;
+    handledRate: number;
+  };
+}
+
+export interface RiskTrendItem {
+  category: string;
+  current: number;
+  previous: number;
+  change: number;
+  trend: "up" | "down";
+}
+
+export interface RiskTrend {
+  period: string;
+  trends: RiskTrendItem[];
+  summary: string;
+}
+
+export interface RiskSuggestion {
+  id: string;
+  priority: "high" | "medium" | "low";
+  title: string;
+  description: string;
+}
