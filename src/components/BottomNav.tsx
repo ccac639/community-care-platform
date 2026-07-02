@@ -1,4 +1,4 @@
-import { Home, UtensilsCrossed, Stethoscope, MessageCircleHeart, Shield, Heart } from "lucide-react";
+import { Home, HeartPulse, UtensilsCrossed, AlertTriangle, MessageCircleHeart, HandHeart } from "lucide-react";
 import { cn } from "../lib/utils";
 
 interface BottomNavProps {
@@ -8,11 +8,11 @@ interface BottomNavProps {
 
 const tabs = [
   { id: "home", icon: Home, label: "首页" },
-  { id: "medical", icon: Stethoscope, label: "医疗" },
-  { id: "food", icon: UtensilsCrossed, label: "食安" },
-  { id: "community", icon: MessageCircleHeart, label: "社区" },
-  { id: "elder", icon: Shield, label: "助老" },
-  { id: "welfare", icon: Heart, label: "公益" },
+  { id: "health", icon: HeartPulse, label: "健康" },
+  { id: "life", icon: UtensilsCrossed, label: "生活" },
+  { id: "social", icon: AlertTriangle, label: "社会" },
+  { id: "psych", icon: MessageCircleHeart, label: "心理" },
+  { id: "welfare", icon: HandHeart, label: "响应" },
 ];
 
 export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {

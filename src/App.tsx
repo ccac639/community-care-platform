@@ -4,10 +4,10 @@ import HomePage from "./pages/HomePage";
 import FoodPage from "./pages/FoodPage";
 import MedicalPage from "./pages/MedicalPage";
 import CommunityPage from "./pages/CommunityPage";
-import ElderPage from "./pages/ElderPage";
 import WelfarePage from "./pages/WelfarePage";
+import DisasterPage from "./pages/DisasterPage";
 
-const MAIN_TABS = ["home", "medical", "food", "community", "elder", "welfare"] as const;
+const MAIN_TABS = ["home", "health", "life", "social", "psych", "welfare"] as const;
 type MainTab = (typeof MAIN_TABS)[number];
 
 function App() {
@@ -23,14 +23,14 @@ function App() {
     switch (activeTab) {
       case "home":
         return <HomePage onNavigate={handleNavigate} />;
-      case "food":
-        return <FoodPage onBack={() => setActiveTab("home")} />;
-      case "medical":
+      case "health":
         return <MedicalPage onBack={() => setActiveTab("home")} />;
-      case "community":
+      case "life":
+        return <FoodPage onBack={() => setActiveTab("home")} />;
+      case "social":
+        return <DisasterPage onBack={() => setActiveTab("home")} />;
+      case "psych":
         return <CommunityPage onBack={() => setActiveTab("home")} />;
-      case "elder":
-        return <ElderPage onBack={() => setActiveTab("home")} />;
       case "welfare":
         return <WelfarePage onBack={() => setActiveTab("home")} />;
       default:
