@@ -33,7 +33,7 @@ export default function WelfarePage({ onBack }: WelfarePageProps) {
     loadData();
   }, [viewLevel]);
 
-  const levelLabels = { province: "全省", city: "本市", district: "本区" };
+  const levelLabels = { province: "XX省", city: "XX市", district: "XX区" };
 
   const statItems: { key: keyof WelfareStats; label: string; icon: any; color: string }[] = [
     { key: "missingBabyren", label: "失踪儿童", icon: AlertTriangle, color: "text-red-500 bg-red-50" },

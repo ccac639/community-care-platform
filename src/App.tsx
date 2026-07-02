@@ -1,5 +1,6 @@
 import { useState } from "react";
 import BottomNav from "./components/BottomNav";
+import SplashScreen from "./components/SplashScreen";
 import HomePage from "./pages/HomePage";
 import FoodPage from "./pages/FoodPage";
 import MedicalPage from "./pages/MedicalPage";
@@ -12,6 +13,7 @@ type MainTab = (typeof MAIN_TABS)[number];
 
 function App() {
   const [activeTab, setActiveTab] = useState<MainTab>("home");
+  const [showSplash, setShowSplash] = useState(true);
 
   const handleNavigate = (page: string) => {
     if (MAIN_TABS.includes(page as MainTab)) {
@@ -39,7 +41,8 @@ function App() {
   };
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-gray-50 relative">
+    <div className="w-full min-h-screen bg-gray-50 relative">
+      {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
       {renderPage()}
       <BottomNav activeTab={activeTab} onTabChange={(tab) => setActiveTab(tab as MainTab)} />
     </div>

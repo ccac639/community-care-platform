@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield, HeartPulse, UtensilsCrossed, AlertTriangle, MessageCircleHeart, HandHeart, Bell, ChevronRight, Activity, TrendingUp, Eye, Zap, Droplets, Wind, Thermometer, MapPin, Loader2 } from "lucide-react";
+import { Shield, HeartPulse, UtensilsCrossed, AlertTriangle, MessageCircleHeart, HandHeart, Bell, ChevronRight, Activity, TrendingUp, Eye, Zap, Droplets, Wind, Thermometer, MapPin, Loader2, Navigation, ChevronDown, Check } from "lucide-react";
 import { cn } from "../lib/utils";
 import { getCommunityRiskIndex, getCurrentWeather, type WeatherData, type CommunityRiskResult } from "../core/ai";
 
@@ -21,11 +21,32 @@ const alerts = [
   { id: 3, type: "info", title: "社区公益活动", desc: "本周六老年健康义诊活动报名中", time: "昨天", module: "公共响应" },
 ];
 
+const locationOptions = [
+  { province: "XX省", city: "XX市", district: "XX区" },
+  { province: "XX省", city: "XX市", district: "XX区" },
+  { province: "XX省", city: "XX市", district: "XX区" },
+  { province: "XX省", city: "XX市", district: "XX区" },
+];
+
 export default function HomePage({ onNavigate }: HomePageProps) {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [riskData, setRiskData] = useState<CommunityRiskResult | null>(null);
   const [loadingWeather, setLoadingWeather] = useState(true);
   const [loadingRisk, setLoadingRisk] = useState(true);
+  const [currentLocation, setCurrentLocation] = useState(locationOptions[0]);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [locating, setLocating] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    setLocating(true);
+    setTimeout(() => {
+      if (active) {
+        setLocating(false);
+      }
+    }, 1500);
+    return () => { active = false; };
+  }, [currentLocation]);
 
   useEffect(() => {
     let active = true;
@@ -39,7 +60,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
       }
     })();
     return () => { active = false; };
-  }, []);
+  }, [currentLocation]);
 
   const greeting = () => {
     const h = new Date().getHours();
@@ -58,6 +79,57 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         <div className="absolute top-20 left-1/2 w-32 h-32 bg-white/5 rounded-full" />
 
         <div className="relative z-10">
+          <button
+            onClick={() => setShowLocationPicker(!showLocationPicker)}
+            className="flex items-center gap-1.5 text-white/90 mb-4 btn-pressable"
+          >
+            {locating ? (
+              <>
+                <Navigation className="w-4 h-4 animate-pulse" />
+                <span className="text-sm">正在定位...</span>
+              </>
+            ) : (
+              <>
+                <MapPin className="w-4 h-4" />
+                <span className="text-sm font-medium">
+                  {currentLocation.province} {currentLocation.city} {currentLocation.district}
+                </span>
+                <ChevronDown className="w-3.5 h-3.5" />
+              </>
+            )}
+          </button>
+
+          {showLocationPicker && (
+            <div className="absolute top-12 left-0 right-0 bg-white rounded-2xl shadow-xl p-3 z-50 animate-fade-in">
+              <div className="text-xs font-medium text-gray-500 mb-2 px-2">选择位置</div>
+              <div className="space-y-1">
+                {locationOptions.map((loc, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setCurrentLocation(loc);
+                      setShowLocationPicker(false);
+                    }}
+                    className={cn(
+                      "w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors",
+                      currentLocation === loc ? "bg-blue-50" : "hover:bg-gray-50"
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm text-gray-700">
+                        {loc.province} {loc.city} {loc.district}
+                      </span>
+                    </div>
+                    {currentLocation === loc && (
+                      <Check className="w-4 h-4 text-blue-500" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between mb-5">
             <div>
               <p className="text-blue-100 text-sm">{greeting()}，守望者</p>
@@ -119,7 +191,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
             {weather && (
               <div className="flex items-center gap-1 text-xs text-gray-400">
                 <MapPin className="w-3 h-3" />
-                <span>{weather.city}</span>
+                <span>{currentLocation.city} {currentLocation.district}</span>
               </div>
             )}
           </div>
