@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ArrowLeft, Stethoscope, Search, MapPin, ChevronDown, ChevronUp, Activity, AlertCircle, Navigation, Phone, Crosshair, Map as MapIcon, Building2 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { hospitals as staticHospitals, type Hospital } from "../data/mockData";
-import { analyzeSymptoms, type SymptomAnalysisResult } from "../services/aiService";
+import { analyzeSymptoms, type SymptomAnalysisResult } from "../core/ai";
 import AMapView from "../components/AMapView";
 import SkeletonView from "../components/SkeletonView";
 

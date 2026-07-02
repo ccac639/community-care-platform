@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AlertTriangle, Radio, Home, MapPin, Phone, Shield, Activity, CloudLightning, ArrowRight, Loader2 } from "lucide-react";
 import { cn } from "../lib/utils";
-import { assessDisasterRisk, type DisasterRiskResult } from "../services/aiService";
+import { assessDisasterRisk, type DisasterRiskResult } from "../core/ai";
 
 interface DisasterPageProps {
   onBack?: () => void;

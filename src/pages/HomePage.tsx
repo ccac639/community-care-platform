@@ -1,5 +1,7 @@
-import { Shield, HeartPulse, UtensilsCrossed, AlertTriangle, MessageCircleHeart, HandHeart, Bell, ChevronRight, Activity, TrendingUp, Eye, Zap } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Shield, HeartPulse, UtensilsCrossed, AlertTriangle, MessageCircleHeart, HandHeart, Bell, ChevronRight, Activity, TrendingUp, Eye, Zap, Droplets, Wind, Thermometer, MapPin, Loader2 } from "lucide-react";
 import { cn } from "../lib/utils";
+import { getCommunityRiskIndex, getCurrentWeather, type WeatherData, type CommunityRiskResult } from "../core/ai";
 
 interface HomePageProps {
   onNavigate: (page: string) => void;
@@ -20,6 +22,25 @@ const alerts = [
 ];
 
 export default function HomePage({ onNavigate }: HomePageProps) {
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [riskData, setRiskData] = useState<CommunityRiskResult | null>(null);
+  const [loadingWeather, setLoadingWeather] = useState(true);
+  const [loadingRisk, setLoadingRisk] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const [w, r] = await Promise.all([getCurrentWeather(), getCommunityRiskIndex()]);
+      if (active) {
+        setWeather(w);
+        setRiskData(r);
+        setLoadingWeather(false);
+        setLoadingRisk(false);
+      }
+    })();
+    return () => { active = false; };
+  }, []);
+
   const greeting = () => {
     const h = new Date().getHours();
     if (h < 6) return "凌晨好";
@@ -57,30 +78,113 @@ export default function HomePage({ onNavigate }: HomePageProps) {
               <Activity className="w-4 h-4 text-white" />
               <span className="text-sm font-semibold text-white">社区整体风险指数</span>
             </div>
-            <div className="flex items-end gap-4">
-              <div>
-                <div className="text-4xl font-bold text-white">28</div>
-                <div className="text-xs text-blue-100 mt-0.5">低风险 · 一切安好</div>
+            {loadingRisk ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="w-5 h-5 text-white/70 animate-spin" />
               </div>
-              <div className="flex-1 h-2 bg-white/20 rounded-full overflow-hidden">
-                <div className="h-full w-[28%] bg-gradient-to-r from-green-400 to-emerald-400 rounded-full" />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
-              <div className="flex items-center gap-1 text-xs text-blue-100">
-                <Eye className="w-3.5 h-3.5" />
-                <span>5大风险维度实时监测</span>
-              </div>
-              <div className="flex items-center gap-1 text-xs text-green-300">
-                <TrendingUp className="w-3.5 h-3.5" />
-                <span>较昨日 ↓ 12%</span>
-              </div>
-            </div>
+            ) : riskData && (
+              <>
+                <div className="flex items-end gap-4">
+                  <div>
+                    <div className="text-4xl font-bold text-white">{riskData.score}</div>
+                    <div className="text-xs text-blue-100 mt-0.5">{riskData.level} · 一切安好</div>
+                  </div>
+                  <div className="flex-1 h-2 bg-white/20 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-green-400 to-emerald-400 rounded-full transition-all duration-700" style={{ width: `${riskData.score}%` }} />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
+                  <div className="flex items-center gap-1 text-xs text-blue-100">
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>5大风险维度实时监测</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-green-300">
+                    <TrendingUp className={`w-3.5 h-3.5 ${riskData.trend < 0 ? "" : "rotate-180"}`} />
+                    <span>较昨日 {riskData.trend < 0 ? "↓" : "↑"} {Math.abs(riskData.trend)}%</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
 
       <div className="px-4 -mt-5 relative z-20">
+        <div className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 p-4 mb-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-gray-800 flex items-center gap-1.5">
+              <Thermometer className="w-4 h-4 text-orange-500" />
+              今日天气
+            </h2>
+            {weather && (
+              <div className="flex items-center gap-1 text-xs text-gray-400">
+                <MapPin className="w-3 h-3" />
+                <span>{weather.city}</span>
+              </div>
+            )}
+          </div>
+          {loadingWeather ? (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="w-5 h-5 text-orange-500 animate-spin" />
+              <span className="text-sm text-gray-400 ml-2">加载天气中...</span>
+            </div>
+          ) : weather && (
+            <div className="flex items-center gap-4">
+              <div className="text-5xl">{weather.icon}</div>
+              <div className="flex-1">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-gray-800">{weather.outdoorTemp}°</span>
+                  <span className="text-sm text-gray-500">{weather.weather}</span>
+                </div>
+                <div className="text-xs text-gray-400 mt-0.5">体感 {weather.feelsLike}°C · {weather.wind}</div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-1.5 text-xs">
+                  <div className="w-7 h-7 bg-orange-50 rounded-lg flex items-center justify-center">
+                    <Thermometer className="w-3.5 h-3.5 text-orange-500" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-gray-400">室外</div>
+                    <div className="text-xs font-semibold text-gray-700">{weather.outdoorTemp}°C</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs">
+                  <div className="w-7 h-7 bg-blue-50 rounded-lg flex items-center justify-center">
+                    <Thermometer className="w-3.5 h-3.5 text-blue-500" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-gray-400">室内</div>
+                    <div className="text-xs font-semibold text-gray-700">{weather.indoorTemp}°C</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          {weather && (
+            <div className="flex items-center justify-around mt-3 pt-3 border-t border-gray-100">
+              <div className="flex items-center gap-1.5">
+                <Droplets className="w-4 h-4 text-blue-400" />
+                <span className="text-xs text-gray-600">湿度 {weather.humidity}%</span>
+              </div>
+              <div className="w-px h-4 bg-gray-100" />
+              <div className="flex items-center gap-1.5">
+                <Wind className="w-4 h-4 text-gray-400" />
+                <span className="text-xs text-gray-600">{weather.wind}</span>
+              </div>
+              <div className="w-px h-4 bg-gray-100" />
+              <div className="flex items-center gap-1.5">
+                <div className={cn(
+                  "w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold text-white",
+                  weather.aqi <= 50 ? "bg-green-500" : weather.aqi <= 100 ? "bg-yellow-500" : "bg-orange-500"
+                )}>
+                  !
+                </div>
+                <span className="text-xs text-gray-600">空气 {weather.aqiLevel}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-gray-800 flex items-center gap-1.5">
@@ -156,9 +260,9 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         <h2 className="text-base font-bold text-gray-800 mb-3">今日数据</h2>
         <div className="grid grid-cols-3 gap-3">
           {[
-            { value: "1,286", label: "监测人群", unit: "人" },
-            { value: "23", label: "风险预警", unit: "条" },
-            { value: "98.2%", label: "响应及时率", unit: "" },
+            { value: riskData?.monitoredCount?.toLocaleString() || "--", label: "监测人群", unit: "人" },
+            { value: riskData?.alertCount?.toString() || "--", label: "风险预警", unit: "条" },
+            { value: riskData ? `${riskData.responseRate}%` : "--", label: "响应及时率", unit: "" },
           ].map((stat, i) => (
             <div key={i} className="bg-white rounded-xl p-3 text-center shadow-sm shadow-gray-100">
               <div className="text-lg font-bold text-primary-600">{stat.value}<span className="text-xs font-normal text-gray-400 ml-0.5">{stat.unit}</span></div>

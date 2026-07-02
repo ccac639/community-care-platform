@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { ArrowLeft, Video, MessageCircle, Upload, X, Mic, MicOff, PhoneOff, Send, Sparkles, Heart, Play, Pause, Volume2, Image as ImageIcon } from "lucide-react";
 import { cn, formatTime } from "../lib/utils";
 import { quickPhrases, type Message } from "../data/mockData";
-import { chat, generateVideoSubtitle } from "../services/aiService";
+import { chat, generateVideoSubtitle } from "../core/ai";
 
 interface CommunityPageProps {
   onBack: () => void;

@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { Camera, Upload, CheckCircle, AlertTriangle, XCircle, Info, ArrowLeft, ScanLine } from "lucide-react";
 import { cn } from "../lib/utils";
 import { foodAdditives } from "../data/mockData";
-import { analyzeFoodLabel, type FoodAnalysisResult } from "../services/aiService";
+import { analyzeFoodLabel, type FoodAnalysisResult } from "../core/ai";
 
 interface FoodPageProps {
   onBack: () => void;
