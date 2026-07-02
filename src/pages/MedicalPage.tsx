@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { ArrowLeft, Stethoscope, Search, MapPin, ChevronDown, ChevronUp, Activity, AlertCircle, Navigation, Phone, Crosshair, Map as MapIcon, Building2 } from "lucide-react";
 import { cn } from "../lib/utils";
-import { rareDiseases, hospitals as staticHospitals, type Hospital } from "../data/mockData";
+import { hospitals as staticHospitals, type Hospital } from "../data/mockData";
+import { analyzeSymptoms, type SymptomAnalysisResult } from "../services/aiService";
 import AMapView from "../components/AMapView";
 import SkeletonView from "../components/SkeletonView";
 
@@ -23,7 +24,8 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [showMap, setShowMap] = useState(false);
   const [mapInitialHospitalId, setMapInitialHospitalId] = useState<string | null>(null);
-  const [expandedDisease, setExpandedDisease] = useState<string | null>(rareDiseases[0].id);
+  const [analysisResult, setAnalysisResult] = useState<SymptomAnalysisResult | null>(null);
+  const [expandedDisease, setExpandedDisease] = useState<string | null>(null);
   const [nearbyHospitals, setNearbyHospitals] = useState<HospitalWithDistance[]>(staticHospitals);
   const [userLocated, setUserLocated] = useState(false);
 
@@ -33,13 +35,13 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
     );
   };
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (selectedSymptoms.length === 0) return;
     setStep("analyzing");
-    setTimeout(() => {
-      setStep("result");
-      setExpandedDisease(rareDiseases[0].id);
-    }, 2500);
+    const result = await analyzeSymptoms(selectedSymptoms);
+    setAnalysisResult(result);
+    setExpandedDisease(result.diseases[0]?.id || null);
+    setStep("result");
   };
 
   const handleOpenMap = (hospitalId?: string) => {
@@ -47,7 +49,7 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
     setShowMap(true);
   };
 
-  const topDisease = rareDiseases[0];
+  const topDisease = analysisResult?.diseases[0];
   const nearestHospital = nearbyHospitals[0];
 
   return (
@@ -125,7 +127,7 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
         </div>
       )}
 
-      {step === "result" && (
+      {step === "result" && analysisResult && (
         <div className="px-4 pt-4">
           <div className="bg-white rounded-2xl p-4 mb-4">
             <div className="flex items-center justify-between mb-3">
@@ -138,7 +140,7 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
             </div>
 
             <div className="space-y-3">
-              {rareDiseases.map((d) => {
+              {analysisResult.diseases.map((d) => {
                 const isExpanded = expandedDisease === d.id;
                 const isTop = d.probability >= 50;
                 return (
@@ -268,7 +270,7 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
           </div>
 
           <button
-            onClick={() => { setStep("input"); setSelectedSymptoms([]); setUserLocated(false); setNearbyHospitals(staticHospitals); }}
+            onClick={() => { setStep("input"); setSelectedSymptoms([]); setUserLocated(false); setNearbyHospitals(staticHospitals); setAnalysisResult(null); }}
             className="w-full py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium btn-pressable"
           >
             重新初筛

@@ -2,41 +2,13 @@ import { useState, useRef } from "react";
 import { Camera, Upload, CheckCircle, AlertTriangle, XCircle, Info, ArrowLeft, ScanLine } from "lucide-react";
 import { cn } from "../lib/utils";
 import { foodAdditives } from "../data/mockData";
+import { analyzeFoodLabel, type FoodAnalysisResult } from "../services/aiService";
 
 interface FoodPageProps {
   onBack: () => void;
 }
 
 type RiskLevel = "safe" | "warning" | "danger";
-
-interface AnalyzeResult {
-  productName: string;
-  score: number;
-  level: RiskLevel;
-  summary: string;
-  ingredients: { name: string; risk: RiskLevel; desc: string }[];
-  suggestions: string[];
-}
-
-const mockResult: AnalyzeResult = {
-  productName: "某品牌乳酸菌饮品",
-  score: 65,
-  level: "warning",
-  summary: "含有多种食品添加剂，儿童建议少量饮用",
-  ingredients: [
-    { name: "水", risk: "safe", desc: "安全成分" },
-    { name: "全脂乳粉", risk: "safe", desc: "优质奶源" },
-    { name: "白砂糖", risk: "warning", desc: "含糖量较高，儿童需控制" },
-    { name: "柠檬黄", risk: "warning", desc: "人工色素，可能影响儿童注意力" },
-    { name: "安赛蜜", risk: "warning", desc: "人工甜味剂，建议适量食用" },
-    { name: "山梨酸钾", risk: "safe", desc: "国标允许防腐剂" },
-  ],
-  suggestions: [
-    "建议儿童每日饮用不超过1瓶",
-    "不含三聚氰胺等违禁添加物",
-    "乳糖不耐受人群请谨慎饮用",
-  ],
-};
 
 const riskConfig = {
   safe: { icon: CheckCircle, color: "text-green-500", bg: "bg-green-50", border: "border-green-200", label: "安全", labelBg: "bg-green-500" },
@@ -47,14 +19,18 @@ const riskConfig = {
 export default function FoodPage({ onBack }: FoodPageProps) {
   const [step, setStep] = useState<"upload" | "analyzing" | "result">("upload");
   const [image, setImage] = useState<string | null>(null);
+  const [result, setResult] = useState<FoodAnalysisResult | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (file: File) => {
     const reader = new FileReader();
-    reader.onload = (e) => {
-      setImage(e.target?.result as string);
+    reader.onload = async (e) => {
+      const imageData = e.target?.result as string;
+      setImage(imageData);
       setStep("analyzing");
-      setTimeout(() => setStep("result"), 2000);
+      const analysisResult = await analyzeFoodLabel(imageData);
+      setResult(analysisResult);
+      setStep("result");
     };
     reader.readAsDataURL(file);
   };
@@ -65,8 +41,8 @@ export default function FoodPage({ onBack }: FoodPageProps) {
     if (file && file.type.startsWith("image/")) handleFile(file);
   };
 
-  const scoreColor = mockResult.score >= 80 ? "text-green-500" : mockResult.score >= 60 ? "text-amber-500" : "text-red-500";
-  const scoreRingColor = mockResult.score >= 80 ? "#22c55e" : mockResult.score >= 60 ? "#f59e0b" : "#ef4444";
+  const scoreColor = result ? (result.score >= 80 ? "text-green-500" : result.score >= 60 ? "text-amber-500" : "text-red-500") : "";
+  const scoreRingColor = result ? (result.score >= 80 ? "#22c55e" : result.score >= 60 ? "#f59e0b" : "#ef4444") : "#ef4444";
 
   return (
     <div className="animate-fade-in pb-24 min-h-screen bg-gray-50">
@@ -153,7 +129,7 @@ export default function FoodPage({ onBack }: FoodPageProps) {
         </div>
       )}
 
-      {step === "result" && (
+      {step === "result" && result && (
         <div className="px-4 pt-4">
           <div className="bg-white rounded-2xl p-4 mb-4">
             <div className="flex items-center gap-4">
@@ -164,22 +140,22 @@ export default function FoodPage({ onBack }: FoodPageProps) {
                     cx="32" cy="32" r="28" fill="none"
                     stroke={scoreRingColor}
                     strokeWidth="5"
-                    strokeDasharray={`${(mockResult.score / 100) * 176} 176`}
+                    strokeDasharray={`${(result.score / 100) * 176} 176`}
                     strokeLinecap="round"
                   />
                 </svg>
-                <span className={cn("absolute text-lg font-bold", scoreColor)}>{mockResult.score}</span>
+                <span className={cn("absolute text-lg font-bold", scoreColor)}>{result.score}</span>
               </div>
               <div className="flex-1">
-                <h2 className="text-base font-bold text-gray-800">{mockResult.productName}</h2>
-                <p className="text-sm text-gray-500 mt-0.5">{mockResult.summary}</p>
+                <h2 className="text-base font-bold text-gray-800">{result.productName}</h2>
+                <p className="text-sm text-gray-500 mt-0.5">{result.summary}</p>
               </div>
             </div>
           </div>
 
           <h3 className="text-sm font-semibold text-gray-700 mb-2">配料成分分析</h3>
           <div className="bg-white rounded-2xl overflow-hidden mb-4">
-            {mockResult.ingredients.map((ing, i) => {
+            {result.ingredients.map((ing, i) => {
               const cfg = riskConfig[ing.risk];
               const Icon = cfg.icon;
               return (
@@ -199,7 +175,7 @@ export default function FoodPage({ onBack }: FoodPageProps) {
 
           <h3 className="text-sm font-semibold text-gray-700 mb-2">健康建议</h3>
           <div className="bg-blue-50 rounded-2xl p-4 mb-4">
-            {mockResult.suggestions.map((s, i) => (
+            {result.suggestions.map((s, i) => (
               <div key={i} className="flex items-start gap-2 py-1">
                 <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-blue-800">{s}</p>
@@ -208,7 +184,7 @@ export default function FoodPage({ onBack }: FoodPageProps) {
           </div>
 
           <button
-            onClick={() => { setStep("upload"); setImage(null); }}
+            onClick={() => { setStep("upload"); setImage(null); setResult(null); }}
             className="w-full py-3 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-xl font-medium btn-pressable shadow-lg shadow-orange-200/50"
           >
             重新识别

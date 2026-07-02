@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { ArrowLeft, Video, MessageCircle, Upload, X, Mic, MicOff, PhoneOff, Send, Sparkles, Heart, Play, Pause, Volume2, Image as ImageIcon } from "lucide-react";
 import { cn, formatTime } from "../lib/utils";
 import { quickPhrases, type Message } from "../data/mockData";
+import { chat, generateVideoSubtitle } from "../services/aiService";
 
 interface CommunityPageProps {
   onBack: () => void;
@@ -20,17 +21,14 @@ function VideoCallPage({ avatarUrl, onEnd }: { avatarUrl: string; onEnd: () => v
   useEffect(() => {
     const timer = setInterval(() => setDuration((d) => d + 1), 1000);
     const talkTimer = setInterval(() => setIsTalking((p) => !p), 800);
-    const subTimer = setInterval(() => {
-      const subs = [
-        "我在听呢，你慢慢说~",
-        "听起来你今天遇到了一些事情",
-        "嗯嗯，我理解你的感受",
-        "那一定很不容易吧",
-        "你愿意多说一点吗？",
-      ];
-      setSubtitle(subs[Math.floor(Math.random() * subs.length)]);
-    }, 5000);
+    let active = true;
+    const updateSubtitle = async () => {
+      const result = await generateVideoSubtitle();
+      if (active) setSubtitle(result.subtitle);
+    };
+    const subTimer = setInterval(updateSubtitle, 5000);
     return () => {
+      active = false;
       clearInterval(timer);
       clearInterval(talkTimer);
       clearInterval(subTimer);
@@ -142,7 +140,7 @@ function TreeHole() {
     reader.readAsDataURL(file);
   };
 
-  const handleSend = (text?: string) => {
+  const handleSend = async (text?: string) => {
     const content = text || inputText.trim();
     if (!content) return;
 
@@ -151,23 +149,15 @@ function TreeHole() {
     setInputText("");
     setIsTyping(true);
 
-    setTimeout(() => {
-      const responses = [
-        "我理解你的感受，能跟我多说说吗？",
-        "谢谢你愿意和我分享，这需要勇气 💙",
-        "嗯嗯，我在认真听呢。",
-        "你有这样的感觉很正常，不要太责怪自己。",
-        "那你希望我怎么帮你呢？",
-      ];
-      const aiMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "ai",
-        content: responses[Math.floor(Math.random() * responses.length)],
-        time: "刚刚",
-      };
-      setMessages((prev) => [...prev, aiMsg]);
-      setIsTyping(false);
-    }, 1200);
+    const result = await chat(content);
+    const aiMsg: Message = {
+      id: (Date.now() + 1).toString(),
+      role: "ai",
+      content: result.content,
+      time: "刚刚",
+    };
+    setMessages((prev) => [...prev, aiMsg]);
+    setIsTyping(false);
   };
 
   if (inCall && avatarUrl) {
