@@ -13,7 +13,7 @@
     "dev:weapp": "npm run build:weapp -- --watch",
     "build:tt": "taro build --type tt",
     "dev:tt": "npm run build:tt -- --watch",
-    "build:h5": "taro build --type h5",
+    "build:h5": "taro build --type h5 && node scripts/gen-html.js",
     "dev:h5": "npm run build:h5 -- --watch"
   },
   "browserslist": [
@@ -26,20 +26,21 @@
     "@tarojs/components": "3.6.30",
     "@tarojs/helper": "3.6.30",
     "@tarojs/plugin-framework-react": "3.6.30",
-    "@tarojs/plugin-platform-weapp": "3.6.30",
-    "@tarojs/plugin-platform-tt": "3.6.30",
     "@tarojs/plugin-platform-h5": "3.6.30",
+    "@tarojs/plugin-platform-tt": "3.6.30",
+    "@tarojs/plugin-platform-weapp": "3.6.30",
     "@tarojs/react": "3.6.30",
     "@tarojs/runtime": "3.6.30",
     "@tarojs/shared": "3.6.30",
     "@tarojs/taro": "3.6.30",
+    "clsx": "^2.1.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "clsx": "^2.1.0",
     "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.21.5",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.6.2",
     "@tarojs/cli": "3.6.30",
     "@tarojs/webpack5-runner": "3.6.30",
     "@types/react": "^18.2.0",

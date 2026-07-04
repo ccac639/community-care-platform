@@ -36,6 +36,9 @@ jobs:
 
       - name: Build H5
         run: npm run build:h5
+        env:
+          H5_PUBLIC_PATH: "/community-care-platform/"
+          NODE_ENV: production
 
       - name: Add .nojekyll
         run: echo "" > dist/.nojekyll

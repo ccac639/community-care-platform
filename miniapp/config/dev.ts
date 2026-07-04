@@ -5,9 +5,11 @@ export default {
   defineConstants: {},
   mini: {},
   h5: {
+    publicPath: "/",
     devServer: {
       port: 10086,
       host: "0.0.0.0",
+      historyApiFallback: true,
     },
   },
 };
