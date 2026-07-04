@@ -5,13 +5,15 @@ export default {
   defineConstants: {},
   mini: {},
   h5: {
-    /**
-     * 如果 h5 端编译后体积过大，可以使用 webpack-bundle-analyzer 插件对打包体积进行分析。
-     * 参考：https://github.com/webpack-contrib/webpack-bundle-analyzer
-     */
-    // webpackChain (chain) {
-    //   chain.plugin('analyzer')
-    //     .use(require('webpack-bundle-analyzer').BundleAnalyzerPlugin, [])
-    // },
+    publicPath: "/community-care-platform/",
+    output: {
+      filename: "js/[name].[hash:8].js",
+      chunkFilename: "js/[name].[chunkhash:8].js",
+    },
+    miniCssExtractPluginOption: {
+      ignoreOrder: true,
+      filename: "css/[name].[hash].css",
+      chunkFilename: "css/[name].[chunkhash].css",
+    },
   },
 };
