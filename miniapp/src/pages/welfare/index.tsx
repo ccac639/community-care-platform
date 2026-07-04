@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Taro from "@tarojs/taro";
-import { View, Text, ScrollView, Map } from "@tarojs/components";
+import { View, Text, ScrollView } from "@tarojs/components";
 import TabBar from "@/components/TabBar";
 import {
   calculateWelfareRisk,
@@ -58,46 +58,39 @@ const crisisEvents = [
     type: "失踪",
     typeColor: "#dc2626",
     title: "XX区一名8岁男童走失",
-    desc: "今天下午4点左右在XX公园走失，身穿蓝色上衣，家长已报警，请附近居民留意。",
+    desc: "今天下午4点左右在XX公园走失，身穿蓝色上衣。",
     time: "2小时前",
     status: "紧急",
+    statusColor: "#dc2626",
   },
   {
     id: 2,
     type: "危难",
     typeColor: "#ea580c",
     title: "独居老人突发疾病求助",
-    desc: "XX小区王奶奶在家中突发头晕，子女不在身边，社区志愿者已前往协助。",
+    desc: "XX小区王奶奶在家中突发头晕，子女不在身边。",
     time: "5小时前",
     status: "处理中",
+    statusColor: "#ea580c",
   },
   {
     id: 3,
     type: "儿童",
     typeColor: "#ca8a04",
     title: "留守儿童心理健康关注",
-    desc: "XX村3名留守儿童长期缺乏父母陪伴，出现情绪低落，需要心理关怀。",
+    desc: "XX村3名留守儿童长期缺乏父母陪伴，需要心理关怀。",
     time: "1天前",
     status: "跟进中",
-  },
-  {
-    id: 4,
-    type: "求助",
-    typeColor: "#2563eb",
-    title: "困难家庭物资求助",
-    desc: "XX社区张女士家遭遇变故，急需生活物资和医疗费用帮助。",
-    time: "2天前",
-    status: "已响应",
+    statusColor: "#ca8a04",
   },
 ];
 
-// 热力图数据（模拟风险点）
-const heatMarkers = [
-  { id: 1, longitude: 116.412, latitude: 39.92, title: "高风险区" },
-  { id: 2, longitude: 116.42, latitude: 39.915, title: "中风险区" },
-  { id: 3, longitude: 116.405, latitude: 39.925, title: "中风险区" },
-  { id: 4, longitude: 116.418, latitude: 39.93, title: "低风险区" },
-  { id: 5, longitude: 116.4, latitude: 39.91, title: "低风险区" },
+const heatZones = [
+  { id: 1, name: "朝阳区", risk: "high", count: 12 },
+  { id: 2, name: "海淀区", risk: "medium", count: 8 },
+  { id: 3, name: "西城区", risk: "low", count: 4 },
+  { id: 4, name: "东城区", risk: "medium", count: 6 },
+  { id: 5, name: "丰台区", risk: "low", count: 3 },
 ];
 
 export default function Welfare() {
@@ -131,12 +124,6 @@ export default function Welfare() {
     };
   }, [regionLevel]);
 
-  const handleBack = () => {
-    Taro.navigateBack().catch(() => {
-      Taro.switchTab({ url: "/pages/home/index" });
-    });
-  };
-
   const handleRegionChange = (level: RegionLevel) => {
     setRegionLevel(level);
   };
@@ -161,23 +148,42 @@ export default function Welfare() {
     });
   };
 
-  const handleSpread = () => {
-    Taro.showToast({
-      title: "分享功能开发中",
-      icon: "none",
-    });
+  const getPriorityClass = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "priority-high";
+      case "medium":
+        return "priority-medium";
+      case "low":
+        return "priority-low";
+      default:
+        return "priority-low";
+    }
   };
 
   const getPriorityLabel = (priority: string) => {
     switch (priority) {
       case "high":
-        return { label: "高优先级", className: "suggestion-priority-high" };
+        return "高";
       case "medium":
-        return { label: "中优先级", className: "suggestion-priority-medium" };
+        return "中";
       case "low":
-        return { label: "低优先级", className: "suggestion-priority-low" };
+        return "低";
       default:
-        return { label: "一般", className: "suggestion-priority-low" };
+        return "低";
+    }
+  };
+
+  const getRiskColor = (risk: string) => {
+    switch (risk) {
+      case "high":
+        return "#ef4444";
+      case "medium":
+        return "#f59e0b";
+      case "low":
+        return "#22c55e";
+      default:
+        return "#9ca3af";
     }
   };
 
@@ -191,278 +197,201 @@ export default function Welfare() {
       : "#ef4444"
     : "#22c55e";
 
-  const scoreBg = riskData
-    ? riskData.score >= 90
-      ? "linear-gradient(135deg, #d1fae5, #a7f3d0)"
-      : riskData.score >= 70
-      ? "linear-gradient(135deg, #dcfce7, #bbf7d0)"
-      : riskData.score >= 50
-      ? "linear-gradient(135deg, #fef3c7, #fde68a)"
-      : "linear-gradient(135deg, #fee2e2, #fecaca)"
-    : "linear-gradient(135deg, #dcfce7, #bbf7d0)";
-
   return (
     <View className="welfare-page">
-      {/* 顶部红色渐变背景 */}
-      <View className="header">
-        <View className="header-deco header-deco-1" />
-        <View className="header-deco header-deco-2" />
-        <View className="header-content">
-          <View className="header-title-row">
-            <View className="back-btn" onClick={handleBack}>
-              <Text className="back-icon">←</Text>
-            </View>
-            <View className="title-row">
-              <Text className="title-icon">❤️</Text>
-              <Text className="title">爱心公益中心</Text>
-            </View>
-          </View>
-          <Text className="header-subtitle">
-            公益安全监测 · 危机事件响应 · 爱心互助服务
-          </Text>
-        </View>
+      <View className="nav-bar">
+        <Text className="nav-title">爱心公益中心</Text>
       </View>
 
-      <View className="content">
-        {/* 公益安全指数 */}
-        <View className="card">
-          <View className="card-header">
-            <Text className="card-header-icon">📊</Text>
-            <Text className="card-header-title">公益安全指数</Text>
+      <ScrollView className="scroll-content" scrollY>
+        <View className="header-card">
+          <View className="header-bg" />
+          <View className="header-content">
+            <View className="header-title-row">
+              <Text className="header-icon">❤️</Text>
+              <View>
+                <Text className="header-title">公益安全监测</Text>
+                <Text className="header-subtitle">守护每一个需要帮助的人</Text>
+              </View>
+            </View>
           </View>
+        </View>
 
-          {/* 区域切换 */}
-          <View className="region-tabs">
-            {(Object.keys(regionLabels) as RegionLevel[]).map((level) => (
-              <View
-                key={level}
-                className={`region-tab ${
-                  regionLevel === level ? "region-tab-active" : ""
-                }`}
-                onClick={() => handleRegionChange(level)}
-              >
-                <Text className="region-tab-text">
-                  {regionLabels[level]}
+        <View className="region-tabs">
+          {(Object.keys(regionLabels) as RegionLevel[]).map((level) => (
+            <View
+              key={level}
+              className={`region-tab ${regionLevel === level ? "active" : ""}`}
+              onClick={() => handleRegionChange(level)}
+            >
+              <Text>{regionLabels[level]}</Text>
+            </View>
+          ))}
+        </View>
+
+        {loading || !riskData ? (
+          <View className="loading-state">
+            <Text className="loading-icon">⏳</Text>
+            <Text className="loading-text">加载中...</Text>
+          </View>
+        ) : (
+          <>
+            <View className="score-card">
+              <View className="score-circle" style={{ borderColor: scoreColor }}>
+                <Text className="score-value" style={{ color: scoreColor }}>
+                  {riskData.score}
                 </Text>
+                <Text className="score-label">{riskData.levelLabel}</Text>
               </View>
-            ))}
-          </View>
-
-          {loading || !riskData ? (
-            <View style={{ textAlign: "center", padding: 30 }}>
-              <Text style={{ color: "#9ca3af" }}>加载中...</Text>
+              <View className="score-stats">
+                <View className="score-stat">
+                  <Text className="stat-value">{riskData.breakdown.helpEvents}</Text>
+                  <Text className="stat-label">求助事件</Text>
+                </View>
+                <View className="score-stat">
+                  <Text className="stat-value">{riskData.breakdown.handledRate}%</Text>
+                  <Text className="stat-label">AI甄别率</Text>
+                </View>
+              </View>
             </View>
-          ) : (
-            <>
-              <View className="score-overview">
-                <View
-                  className="score-circle"
-                  style={{ background: scoreBg }}
-                >
-                  <Text className="score-value" style={{ color: scoreColor }}>
-                    {riskData.score}
-                  </Text>
-                  <Text className="score-label" style={{ color: scoreColor }}>
-                    {riskData.levelLabel}
-                  </Text>
-                </View>
-              </View>
 
-              {/* 数据明细 */}
-              <View className="breakdown-grid">
-                <View className="breakdown-item">
-                  <Text className="breakdown-icon">👶</Text>
-                  <Text className="breakdown-value">
-                    {riskData.breakdown.missingChildren}
-                  </Text>
-                  <Text className="breakdown-label">失踪儿童</Text>
-                </View>
-                <View className="breakdown-item">
-                  <Text className="breakdown-icon">🆘</Text>
-                  <Text className="breakdown-value">
-                    {riskData.breakdown.distressPeople}
-                  </Text>
-                  <Text className="breakdown-label">危难人群</Text>
-                </View>
-                <View className="breakdown-item">
-                  <Text className="breakdown-icon">🧒</Text>
-                  <Text className="breakdown-value">
-                    {riskData.breakdown.leftBehindChildren}
-                  </Text>
-                  <Text className="breakdown-label">留守儿童</Text>
-                </View>
-                <View className="breakdown-item">
-                  <Text className="breakdown-icon">📞</Text>
-                  <Text className="breakdown-value">
-                    {riskData.breakdown.helpEvents}
-                  </Text>
-                  <Text className="breakdown-label">求助事件</Text>
-                  <View className="breakdown-badge">
-                    <Text className="breakdown-badge-text">
-                      AI甄别 {riskData.breakdown.handledRate}%
-                    </Text>
+            <View className="data-grid">
+              <View className="data-item">
+                <Text className="data-icon">👶</Text>
+                <Text className="data-value">{riskData.breakdown.missingChildren}</Text>
+                <Text className="data-label">失踪儿童</Text>
+              </View>
+              <View className="data-item">
+                <Text className="data-icon">🆘</Text>
+                <Text className="data-value">{riskData.breakdown.distressPeople}</Text>
+                <Text className="data-label">危难人群</Text>
+              </View>
+              <View className="data-item">
+                <Text className="data-icon">🧒</Text>
+                <Text className="data-value">{riskData.breakdown.leftBehindChildren}</Text>
+                <Text className="data-label">留守儿童</Text>
+              </View>
+            </View>
+
+            <View className="section">
+              <View className="section-header">
+                <Text className="section-icon">🚨</Text>
+                <Text className="section-title">危机事件</Text>
+              </View>
+              <View className="event-list">
+                {crisisEvents.map((event) => (
+                  <View key={event.id} className="event-item">
+                    <View className="event-left">
+                      <View className="event-type" style={{ background: event.typeColor }}>
+                        <Text>{event.type}</Text>
+                      </View>
+                      <View className="event-info">
+                        <Text className="event-title">{event.title}</Text>
+                        <Text className="event-desc">{event.desc}</Text>
+                        <Text className="event-time">{event.time}</Text>
+                      </View>
+                    </View>
+                    <View className="event-status" style={{ background: `${event.statusColor}20`, color: event.statusColor }}>
+                      <Text>{event.status}</Text>
+                    </View>
                   </View>
+                ))}
+              </View>
+            </View>
+
+            <View className="section">
+              <View className="section-header">
+                <Text className="section-icon">🗺️</Text>
+                <Text className="section-title">区域风险分布</Text>
+              </View>
+              <View className="heat-map">
+                {heatZones.map((zone) => (
+                  <View key={zone.id} className="heat-zone">
+                    <View className="heat-bar-wrap">
+                      <View className="heat-bar" style={{ width: `${zone.count * 8}%`, background: getRiskColor(zone.risk) }} />
+                    </View>
+                    <View className="heat-info">
+                      <Text className="heat-name">{zone.name}</Text>
+                      <Text className="heat-count" style={{ color: getRiskColor(zone.risk) }}>{zone.count}例</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+              <View className="heat-legend">
+                <View className="legend-item">
+                  <View className="legend-dot" style={{ background: "#ef4444" }} />
+                  <Text>高风险</Text>
+                </View>
+                <View className="legend-item">
+                  <View className="legend-dot" style={{ background: "#f59e0b" }} />
+                  <Text>中风险</Text>
+                </View>
+                <View className="legend-item">
+                  <View className="legend-dot" style={{ background: "#22c55e" }} />
+                  <Text>低风险</Text>
                 </View>
               </View>
-            </>
-          )}
+            </View>
+
+            {riskTrend && (
+              <View className="section">
+                <View className="section-header">
+                  <Text className="section-icon">📈</Text>
+                  <Text className="section-title">风险趋势</Text>
+                </View>
+                <View className="trend-list">
+                  {riskTrend.trends.map((trend, idx) => (
+                    <View key={idx} className="trend-item">
+                      <Text className="trend-name">{trend.category}</Text>
+                      <View className="trend-bar-wrap">
+                        <View className="trend-bar" style={{ width: `${Math.min(trend.current / 5, 100)}%` }} />
+                      </View>
+                      <Text className={`trend-change ${trend.trend === "up" ? "up" : "down"}`}>
+                        {trend.trend === "up" ? "↑" : "↓"}
+                        {Math.abs(trend.change)}%
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            <View className="section">
+              <View className="section-header">
+                <Text className="section-icon">💡</Text>
+                <Text className="section-title">AI建议</Text>
+              </View>
+              <View className="suggestion-list">
+                {suggestions.map((s) => (
+                  <View key={s.id} className="suggestion-item">
+                    <View className={`suggestion-priority ${getPriorityClass(s.priority)}`}>
+                      <Text>{getPriorityLabel(s.priority)}</Text>
+                    </View>
+                    <View className="suggestion-content">
+                      <Text className="suggestion-title">{s.title}</Text>
+                      <Text className="suggestion-desc">{s.description}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            <View className="bottom-space" />
+          </>
+        )}
+      </ScrollView>
+
+      <View className="action-bar">
+        <View className="action-btn secondary" onClick={handleHelp}>
+          <Text className="action-icon">💝</Text>
+          <Text className="action-text">寻求帮助</Text>
         </View>
-
-        {/* 危机事件 */}
-        <View className="card">
-          <View className="card-header">
-            <Text className="card-header-icon">🚨</Text>
-            <Text className="card-header-title">危机事件</Text>
-            <Text className="section-subtitle">← 左右滑动查看 →</Text>
-          </View>
-          <ScrollView className="crisis-scroll" scrollX>
-            {crisisEvents.map((event) => (
-              <View key={event.id} className="crisis-card">
-                <View
-                  className="crisis-type"
-                  style={{ background: event.typeColor }}
-                >
-                  <Text className="crisis-type-text">{event.type}</Text>
-                </View>
-                <Text className="crisis-title">{event.title}</Text>
-                <Text className="crisis-desc">{event.desc}</Text>
-                <View className="crisis-meta">
-                  <Text className="crisis-time">{event.time}</Text>
-                  <View className="crisis-status">
-                    <Text className="crisis-status-text">{event.status}</Text>
-                  </View>
-                </View>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* 公益分析 */}
-        <View className="card">
-          <View className="card-header">
-            <Text className="card-header-icon">🤖</Text>
-            <Text className="card-header-title">AI公益分析</Text>
-          </View>
-
-          {riskTrend && (
-            <View className="analysis-section">
-              <View className="analysis-summary">
-                <Text className="analysis-summary-text">
-                  💡 {riskTrend.summary}
-                </Text>
-              </View>
-
-              <Text style={{ fontSize: 15, fontWeight: 600, color: "#111827", marginBottom: 12 }}>
-                风险趋势（{riskTrend.period}）
-              </Text>
-              {riskTrend.trends.map((t, i) => (
-                <View key={i} className="trend-item">
-                  <Text className="trend-name">{t.category}</Text>
-                  <View className="trend-bar-wrap">
-                    <View
-                      className="trend-bar"
-                      style={{ width: `${Math.min(t.current / 5, 100)}%` }}
-                    />
-                  </View>
-                  <Text
-                    className="trend-change"
-                    style={{
-                      color: t.trend === "up" ? "#dc2626" : "#16a34a",
-                    }}
-                  >
-                    {t.trend === "up" ? "↑" : "↓"}
-                    {Math.abs(t.change)}%
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
-
-          <Text style={{ fontSize: 15, fontWeight: 600, color: "#111827", marginTop: 16, marginBottom: 12 }}>
-            AI建议
-          </Text>
-          {suggestions.map((s) => {
-            const priority = getPriorityLabel(s.priority);
-            return (
-              <View key={s.id} className="suggestion-item">
-                <View className="suggestion-header">
-                  <View className={`suggestion-priority ${priority.className}`}>
-                    {priority.label}
-                  </View>
-                  <Text className="suggestion-title">{s.title}</Text>
-                </View>
-                <Text className="suggestion-desc">{s.description}</Text>
-              </View>
-            );
-          })}
-        </View>
-
-        {/* 社会事件热力图 */}
-        <View className="heatmap-card">
-          <View className="card-header">
-            <Text className="card-header-icon">🗺️</Text>
-            <Text className="card-header-title">区域风险热力图</Text>
-          </View>
-          <Text style={{ fontSize: 13, color: "#6b7280" }}>
-            实时监测区域公益风险分布
-          </Text>
-          <View className="heatmap-wrap">
-            <Map
-              style={{ width: "100%", height: "100%" }}
-              longitude={116.412}
-              latitude={39.92}
-              scale={14}
-              markers={heatMarkers}
-              enable3D={false}
-              showCompass={false}
-              enableZoom={false}
-              enableScroll={false}
-              enableRotate={false}
-              enableSatellite={false}
-              enableTraffic={false}
-            />
-          </View>
-          <View className="heatmap-legend">
-            <View className="heatmap-legend-item">
-              <View
-                className="heatmap-legend-dot"
-                style={{ background: "#ef4444" }}
-              />
-              <Text className="heatmap-legend-text">高风险</Text>
-            </View>
-            <View className="heatmap-legend-item">
-              <View
-                className="heatmap-legend-dot"
-                style={{ background: "#f59e0b" }}
-              />
-              <Text className="heatmap-legend-text">中风险</Text>
-            </View>
-            <View className="heatmap-legend-item">
-              <View
-                className="heatmap-legend-dot"
-                style={{ background: "#22c55e" }}
-              />
-              <Text className="heatmap-legend-text">低风险</Text>
-            </View>
-          </View>
+        <View className="action-btn primary" onClick={handleReport}>
+          <Text className="action-icon">📢</Text>
+          <Text className="action-text">我要上报</Text>
         </View>
       </View>
 
-      {/* 底部帮助中心 */}
-      <View className="help-center">
-        <View className="help-btn help-btn-secondary" onClick={handleHelp}>
-          <Text className="help-btn-icon">💝</Text>
-          <Text className="help-btn-text">寻求帮助</Text>
-        </View>
-        <View className="help-btn help-btn-primary" onClick={handleReport}>
-          <Text className="help-btn-icon">📢</Text>
-          <Text className="help-btn-text">我要上报</Text>
-        </View>
-        <View className="help-btn help-btn-outline" onClick={handleSpread}>
-          <Text className="help-btn-icon">🔄</Text>
-          <Text className="help-btn-text">扩散爱心</Text>
-        </View>
-      </View>
       <TabBar current="welfare" />
     </View>
   );
