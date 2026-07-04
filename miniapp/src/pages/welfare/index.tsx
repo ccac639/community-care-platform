@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Taro from "@tarojs/taro";
 import { View, Text, ScrollView, Map } from "@tarojs/components";
+import TabBar from "@/components/TabBar";
 import {
   calculateWelfareRisk,
   analyzeRiskTrend,
@@ -462,6 +463,7 @@ export default function Welfare() {
           <Text className="help-btn-text">扩散爱心</Text>
         </View>
       </View>
+      <TabBar current="welfare" />
     </View>
   );
 }

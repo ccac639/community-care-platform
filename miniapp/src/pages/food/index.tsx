@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Taro from "@tarojs/taro";
 import { View, Text, Image } from "@tarojs/components";
+import TabBar from "@/components/TabBar";
 import { analyzeFoodLabel, type FoodAnalysisResult } from "@/core/ai";
 import { foodAdditives } from "@/data/mockData";
 import "./index.scss";
@@ -274,6 +275,7 @@ export default function Food() {
           </View>
         </View>
       )}
+      <TabBar current="food" />
     </View>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Taro from "@tarojs/taro";
 import { View, Text, Map } from "@tarojs/components";
+import TabBar from "@/components/TabBar";
 import { assessDisasterRisk, type DisasterRiskResult } from "@/core/ai";
 import { shelters, type Shelter } from "@/data/mockData";
 import "./index.scss";
@@ -412,6 +413,7 @@ export default function Disaster() {
           </View>
         </View>
       )}
+      <TabBar current="disaster" />
     </View>
   );
 }

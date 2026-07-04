@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Taro from "@tarojs/taro";
 import { View, Text, ScrollView, Input } from "@tarojs/components";
+import TabBar from "@/components/TabBar";
 import {
   chat as psychChat,
   createEmotionRecord,
@@ -411,6 +412,7 @@ export default function Community() {
           )}
         </View>
       )}
+      <TabBar current="community" />
     </View>
   );
 }

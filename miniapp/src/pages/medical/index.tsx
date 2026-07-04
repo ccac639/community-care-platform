@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Taro from "@tarojs/taro";
 import { View, Text, ScrollView, Input, Image } from "@tarojs/components";
+import TabBar from "@/components/TabBar";
 import {
   healthChat,
   createTimelineEntry,
@@ -666,6 +667,7 @@ export default function Medical() {
           </View>
         </View>
       )}
+      <TabBar current="medical" />
     </View>
   );
 }
