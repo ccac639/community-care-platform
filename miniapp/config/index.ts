@@ -19,7 +19,12 @@ export default defineConfig(async (merge) => {
     plugins: [],
     defineConstants: {},
     copy: {
-      patterns: [],
+      patterns: [
+        {
+          from: "src/assets",
+          to: "dist/assets",
+        },
+      ],
       options: {},
     },
     framework: "react",
