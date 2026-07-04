@@ -1,0 +1,516 @@
+/* 食品安全页面样式 */
+.food-page {
+  min-height: 100vh;
+  background: #f5f7fa;
+  padding-bottom: 60rpx;
+}
+
+/* ============ 顶部橙色渐变背景 ============ */
+.header {
+  position: relative;
+  padding: 80rpx 32rpx 48rpx;
+  background: linear-gradient(135deg, #fb923c 0%, #f97316 50%, #ea580c 100%);
+  border-bottom-left-radius: 48rpx;
+  border-bottom-right-radius: 48rpx;
+  overflow: hidden;
+}
+
+.header-deco {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.header-deco-1 {
+  top: -160rpx;
+  right: -160rpx;
+  width: 480rpx;
+  height: 480rpx;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.header-deco-2 {
+  bottom: -128rpx;
+  left: -128rpx;
+  width: 384rpx;
+  height: 384rpx;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.header-content {
+  position: relative;
+  z-index: 10;
+}
+
+.header-title-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.back-btn {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
+}
+
+.back-icon {
+  font-size: 36rpx;
+  color: #ffffff;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+}
+
+.title-icon {
+  font-size: 40rpx;
+  margin-right: 16rpx;
+}
+
+.title {
+  font-size: 38rpx;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.header-subtitle {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.85);
+  display: block;
+}
+
+/* ============ 上传步骤 ============ */
+.upload-section {
+  padding: 32rpx;
+}
+
+.upload-card {
+  background: #ffffff;
+  border-radius: 32rpx;
+  padding: 56rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4rpx 24rpx rgba(249, 115, 22, 0.08);
+}
+
+.upload-icon-wrap {
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 32rpx;
+  background: linear-gradient(135deg, #fb923c, #ef4444);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 24rpx rgba(249, 115, 22, 0.3);
+}
+
+.upload-icon {
+  font-size: 64rpx;
+}
+
+.upload-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 12rpx;
+}
+
+.upload-desc {
+  font-size: 24rpx;
+  color: #9ca3af;
+  text-align: center;
+  line-height: 1.6;
+  margin-bottom: 40rpx;
+}
+
+.upload-btns {
+  display: flex;
+  width: 100%;
+}
+
+.upload-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24rpx 0;
+  border-radius: 24rpx;
+  margin: 0 8rpx;
+}
+
+.upload-btn-primary {
+  background: linear-gradient(to right, #fb923c, #ef4444);
+  box-shadow: 0 8rpx 24rpx rgba(249, 115, 22, 0.3);
+}
+
+.upload-btn-primary .upload-btn-icon,
+.upload-btn-primary .upload-btn-text {
+  color: #ffffff;
+}
+
+.upload-btn-outline {
+  background: #ffffff;
+  border: 2rpx solid #e5e7eb;
+}
+
+.upload-btn-outline .upload-btn-icon,
+.upload-btn-outline .upload-btn-text {
+  color: #4b5563;
+}
+
+.upload-btn-icon {
+  font-size: 28rpx;
+  margin-right: 8rpx;
+}
+
+.upload-btn-text {
+  font-size: 26rpx;
+  font-weight: 500;
+}
+
+/* ============ 常见添加剂列表 ============ */
+.additive-card {
+  background: #ffffff;
+  border-radius: 32rpx;
+  padding: 32rpx;
+  margin-top: 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.additive-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.additive-header-icon {
+  font-size: 28rpx;
+  margin-right: 12rpx;
+  color: #3b82f6;
+}
+
+.additive-header-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.additive-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.additive-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+  border-radius: 24rpx;
+  border: 2rpx solid transparent;
+  margin-bottom: 16rpx;
+}
+
+.additive-item:last-child {
+  margin-bottom: 0;
+}
+
+.additive-item-icon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.additive-item-emoji {
+  font-size: 32rpx;
+}
+
+.additive-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.additive-item-name-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6rpx;
+}
+
+.additive-item-name {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #1f2937;
+  margin-right: 12rpx;
+}
+
+.additive-item-badge {
+  padding: 4rpx 14rpx;
+  border-radius: 9999rpx;
+}
+
+.additive-item-badge-text {
+  font-size: 20rpx;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.additive-item-desc {
+  font-size: 22rpx;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* ============ 分析中 ============ */
+.analyzing-section {
+  padding: 96rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.analyzing-image {
+  width: 288rpx;
+  height: 288rpx;
+  border-radius: 32rpx;
+  margin-bottom: 48rpx;
+  opacity: 0.6;
+}
+
+.analyzing-spinner {
+  position: relative;
+  width: 96rpx;
+  height: 96rpx;
+  margin-bottom: 32rpx;
+}
+
+.analyzing-spinner-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 96rpx;
+  height: 96rpx;
+  border: 8rpx solid #fed7aa;
+  border-top-color: #f97316;
+  border-radius: 50%;
+  animation: foodSpin 0.8s linear infinite;
+}
+
+@keyframes foodSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.analyzing-text {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8rpx;
+}
+
+.analyzing-subtext {
+  font-size: 24rpx;
+  color: #9ca3af;
+}
+
+/* ============ 结果展示 ============ */
+.result-section {
+  padding: 32rpx;
+}
+
+/* 评分卡 */
+.score-card {
+  background: #ffffff;
+  border-radius: 32rpx;
+  padding: 32rpx;
+  display: flex;
+  align-items: center;
+  margin-bottom: 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.score-ring-wrap {
+  margin-right: 32rpx;
+  flex-shrink: 0;
+}
+
+.score-ring {
+  position: relative;
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-ring::before {
+  content: "";
+  position: absolute;
+  top: 8rpx;
+  left: 8rpx;
+  right: 8rpx;
+  bottom: 8rpx;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.score-value {
+  position: relative;
+  z-index: 1;
+  font-size: 40rpx;
+  font-weight: 700;
+}
+
+.score-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.score-product {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1f2937;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.score-summary {
+  font-size: 24rpx;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* 区块标题 */
+.section-title-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.section-title-icon {
+  font-size: 28rpx;
+  margin-right: 12rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #374151;
+}
+
+/* 配料成分列表 */
+.ingredients-card {
+  background: #ffffff;
+  border-radius: 32rpx;
+  overflow: hidden;
+  margin-bottom: 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.ingredient-item {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 32rpx;
+}
+
+.ingredient-item-border {
+  border-top: 2rpx solid #f9fafb;
+}
+
+.ingredient-item-emoji {
+  font-size: 32rpx;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
+.ingredient-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ingredient-item-name-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6rpx;
+}
+
+.ingredient-item-name {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #1f2937;
+  margin-right: 12rpx;
+}
+
+.ingredient-item-badge {
+  padding: 4rpx 14rpx;
+  border-radius: 9999rpx;
+}
+
+.ingredient-item-badge-text {
+  font-size: 20rpx;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.ingredient-item-desc {
+  font-size: 22rpx;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* 健康建议 */
+.suggestions-card {
+  background: #eff6ff;
+  border-radius: 32rpx;
+  padding: 32rpx;
+  margin-bottom: 32rpx;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 12rpx 0;
+}
+
+.suggestion-item-icon {
+  font-size: 28rpx;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+}
+
+.suggestion-item-text {
+  flex: 1;
+  font-size: 26rpx;
+  color: #1e40af;
+  line-height: 1.6;
+}
+
+/* 重新识别按钮 */
+.reset-btn {
+  background: linear-gradient(to right, #fb923c, #ef4444);
+  border-radius: 24rpx;
+  padding: 28rpx 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(249, 115, 22, 0.3);
+}
+
+.reset-btn-text {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #ffffff;
+}

@@ -1,0 +1,822 @@
+/* 医疗页面样式 */
+.medical-page {
+  min-height: 100vh;
+  background: #f5f7fa;
+  padding-bottom: 40rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============ 顶部渐变背景 ============ */
+.header {
+  position: relative;
+  padding: 80rpx 32rpx 32rpx;
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #9333ea 100%);
+  border-bottom-left-radius: 32rpx;
+  border-bottom-right-radius: 32rpx;
+  overflow: hidden;
+}
+
+.header-deco {
+  position: absolute;
+  top: -128rpx;
+  right: -128rpx;
+  width: 384rpx;
+  height: 384rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.header-content {
+  position: relative;
+  z-index: 10;
+}
+
+.header-title-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 32rpx;
+}
+
+.back-btn {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
+}
+
+.back-icon {
+  font-size: 36rpx;
+  color: #ffffff;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+}
+
+.title-icon {
+  font-size: 40rpx;
+  margin-right: 16rpx;
+  color: #ffffff;
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* ============ 健康风险评估卡片 ============ */
+.risk-assess-card {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8rpx);
+  border-radius: 24rpx;
+  padding: 24rpx;
+}
+
+.risk-assess-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.risk-assess-title-row {
+  display: flex;
+  align-items: center;
+}
+
+.risk-assess-icon {
+  font-size: 28rpx;
+  margin-right: 12rpx;
+  color: #ffffff;
+}
+
+.risk-assess-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.risk-assess-badge {
+  padding: 6rpx 16rpx;
+  border-radius: 9999rpx;
+}
+
+.risk-assess-badge Text {
+  font-size: 22rpx;
+  font-weight: 500;
+}
+
+.risk-assess-badge-pending {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.risk-assess-badge-pending Text {
+  color: #ffffff;
+}
+
+.risk-assess-score-row {
+  display: flex;
+  align-items: flex-end;
+}
+
+.risk-assess-score {
+  font-size: 72rpx;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+  margin-right: 24rpx;
+}
+
+.risk-assess-bar {
+  flex: 1;
+  height: 24rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999rpx;
+  overflow: hidden;
+  margin-bottom: 12rpx;
+}
+
+.risk-assess-bar-inner {
+  height: 100%;
+  border-radius: 9999rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+}
+
+.risk-assess-pending-row {
+  display: flex;
+  align-items: center;
+}
+
+.risk-assess-bar-pending {
+  height: 100%;
+  width: 33%;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 9999rpx;
+}
+
+.risk-assess-pending-text {
+  font-size: 22rpx;
+  color: #dbeafe;
+  margin-left: 16rpx;
+}
+
+.risk-assess-summary {
+  font-size: 22rpx;
+  color: #dbeafe;
+  margin-top: 16rpx;
+  display: block;
+  line-height: 1.5;
+}
+
+/* ============ Tab 切换 ============ */
+.tab-bar {
+  display: flex;
+  margin: 24rpx 32rpx 0;
+  padding: 8rpx;
+  background: #eef0f3;
+  border-radius: 24rpx;
+}
+
+.tab-item {
+  flex: 1;
+  position: relative;
+  padding: 16rpx 0;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-item-active {
+  background: #ffffff;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+}
+
+.tab-text {
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.tab-item-active .tab-text {
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+.tab-badge {
+  margin-left: 8rpx;
+  background: #e0e7ff;
+  border-radius: 8rpx;
+  padding: 2rpx 8rpx;
+}
+
+.tab-badge-text {
+  font-size: 20rpx;
+  color: #4f46e5;
+}
+
+/* ============ AI 对话 ============ */
+.chat-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 380rpx);
+}
+
+.chat-list {
+  flex: 1;
+  padding: 24rpx 32rpx 16rpx;
+}
+
+.chat-end {
+  height: 1rpx;
+}
+
+.msg-row {
+  display: flex;
+  margin-bottom: 24rpx;
+}
+
+.msg-row-user {
+  justify-content: flex-end;
+}
+
+.msg-row-ai {
+  justify-content: flex-start;
+}
+
+.msg-avatar {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #60a5fa, #6366f1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+}
+
+.msg-avatar-icon {
+  font-size: 28rpx;
+  color: #ffffff;
+}
+
+.msg-content {
+  max-width: 78%;
+}
+
+.msg-bubble {
+  padding: 20rpx 24rpx;
+  border-radius: 32rpx;
+}
+
+.msg-bubble-user {
+  background: #4f46e5;
+  border-bottom-right-radius: 12rpx;
+}
+
+.msg-bubble-user .msg-text {
+  color: #ffffff;
+  font-size: 26rpx;
+  line-height: 1.5;
+}
+
+.msg-bubble-ai {
+  background: #ffffff;
+  border-bottom-left-radius: 12rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.msg-bubble-ai .msg-text {
+  color: #1f2937;
+  font-size: 26rpx;
+  line-height: 1.5;
+}
+
+/* 骨骼图卡片 */
+.skeleton-card {
+  margin-top: 16rpx;
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  border: 1rpx solid #dbeafe;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.skeleton-title-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.skeleton-title-icon {
+  font-size: 24rpx;
+  margin-right: 8rpx;
+  color: #3b82f6;
+}
+
+.skeleton-title {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.skeleton-image-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.skeleton-image {
+  width: 320rpx;
+  height: 576rpx;
+}
+
+.skeleton-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16rpx;
+}
+
+.skeleton-legend-item {
+  display: flex;
+  align-items: center;
+  margin: 0 16rpx;
+}
+
+.skeleton-legend-dot {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 8rpx;
+  margin-right: 8rpx;
+  border: 1rpx solid #9ca3af;
+}
+
+.skeleton-legend-normal {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.skeleton-legend-affected {
+  background: #fecaca;
+  border-color: #ef4444;
+}
+
+.skeleton-legend-text {
+  font-size: 22rpx;
+  color: #6b7280;
+}
+
+/* 可能疾病列表 */
+.disease-list {
+  margin-top: 16rpx;
+}
+
+.disease-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8rpx 0;
+}
+
+.disease-name {
+  font-size: 24rpx;
+  color: #4b5563;
+}
+
+.disease-prob-row {
+  display: flex;
+  align-items: center;
+}
+
+.disease-prob-bar {
+  width: 128rpx;
+  height: 12rpx;
+  background: #f3f4f6;
+  border-radius: 9999rpx;
+  overflow: hidden;
+  margin-right: 12rpx;
+}
+
+.disease-prob-bar-inner {
+  height: 100%;
+  border-radius: 9999rpx;
+}
+
+.disease-prob-text {
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+/* 心理提示 */
+.psych-tip {
+  margin-top: 16rpx;
+  background: #fdf2f8;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  border: 1rpx solid #fce7f3;
+  display: flex;
+  align-items: center;
+}
+
+.psych-tip-icon {
+  font-size: 28rpx;
+  margin-right: 12rpx;
+  color: #ec4899;
+}
+
+.psych-tip-text {
+  font-size: 24rpx;
+  color: #be185d;
+  flex: 1;
+}
+
+/* 输入中动画 */
+.msg-typing {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.msg-typing-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background: #d1d5db;
+  animation: typingBounce 1.2s ease-in-out infinite;
+}
+
+.msg-typing-dot-2 {
+  animation-delay: 0.15s;
+}
+
+.msg-typing-dot-3 {
+  animation-delay: 0.3s;
+}
+
+@keyframes typingBounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-8rpx);
+    opacity: 1;
+  }
+}
+
+/* 频率限制提示 */
+.rate-limit-tip {
+  margin: 0 32rpx 16rpx;
+  background: #fffbeb;
+  border: 1rpx solid #fde68a;
+  border-radius: 24rpx;
+  padding: 16rpx;
+  text-align: center;
+}
+
+.rate-limit-text {
+  font-size: 22rpx;
+  color: #b45309;
+}
+
+/* 快捷症状 */
+.quick-symptoms {
+  padding: 0 32rpx 16rpx;
+  white-space: nowrap;
+}
+
+.quick-symptom {
+  display: inline-flex;
+  padding: 12rpx 24rpx;
+  border-radius: 9999rpx;
+  margin-right: 12rpx;
+  border: 1rpx solid transparent;
+}
+
+.quick-symptom-body {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.quick-symptom-mind {
+  border-color: #fbcfe8;
+  background: #fdf2f8;
+}
+
+.quick-symptom-disabled {
+  border-color: #e5e7eb;
+  background: #f3f4f6;
+}
+
+.quick-symptom-text {
+  font-size: 22rpx;
+  font-weight: 500;
+}
+
+.quick-symptom-body .quick-symptom-text {
+  color: #2563eb;
+}
+
+.quick-symptom-mind .quick-symptom-text {
+  color: #db2777;
+}
+
+.quick-symptom-disabled .quick-symptom-text {
+  color: #9ca3af;
+}
+
+/* 输入框 */
+.input-bar {
+  display: flex;
+  align-items: center;
+  margin: 0 32rpx;
+  padding: 16rpx;
+  background: #ffffff;
+  border-radius: 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.input-field {
+  flex: 1;
+  padding: 16rpx 24rpx;
+  font-size: 26rpx;
+  color: #1f2937;
+  background: transparent;
+}
+
+.input-placeholder {
+  color: #9ca3af;
+  font-size: 26rpx;
+}
+
+.send-btn {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.send-btn-active {
+  background: #4f46e5;
+}
+
+.send-btn-disabled {
+  background: #f3f4f6;
+}
+
+.send-btn-icon {
+  font-size: 28rpx;
+  color: #ffffff;
+}
+
+.send-btn-disabled .send-btn-icon {
+  color: #9ca3af;
+}
+
+/* ============ 时间轴 ============ */
+.timeline-wrap {
+  padding: 24rpx 32rpx;
+}
+
+.timeline-list {
+  position: relative;
+  padding-left: 48rpx;
+}
+
+.timeline-line {
+  position: absolute;
+  left: 16rpx;
+  top: 16rpx;
+  bottom: 16rpx;
+  width: 2rpx;
+  background: #e5e7eb;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 32rpx;
+}
+
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -40rpx;
+  top: 0;
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeline-dot-icon {
+  font-size: 18rpx;
+}
+
+.timeline-card {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  margin-left: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.timeline-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
+}
+
+.timeline-card-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.timeline-card-time {
+  font-size: 20rpx;
+  color: #9ca3af;
+}
+
+.timeline-card-desc {
+  font-size: 22rpx;
+  color: #6b7280;
+  display: block;
+  line-height: 1.5;
+}
+
+.timeline-card-badge {
+  display: inline-block;
+  margin-top: 12rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.timeline-card-badge Text {
+  font-size: 20rpx;
+  font-weight: 500;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 128rpx 0;
+}
+
+.empty-icon {
+  font-size: 96rpx;
+  margin-bottom: 24rpx;
+  opacity: 0.3;
+}
+
+.empty-text {
+  font-size: 24rpx;
+  color: #9ca3af;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ============ 症状列表 ============ */
+.symptoms-wrap {
+  padding: 24rpx 32rpx;
+}
+
+.symptoms-card {
+  background: #ffffff;
+  border-radius: 32rpx;
+  padding: 32rpx;
+  margin-bottom: 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.symptoms-card-title-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.symptoms-card-icon {
+  font-size: 28rpx;
+  margin-right: 12rpx;
+}
+
+.symptoms-card-title {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.symptoms-empty {
+  font-size: 24rpx;
+  color: #9ca3af;
+  padding: 32rpx 0;
+  text-align: center;
+  display: block;
+}
+
+.symptoms-tags {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.symptom-tag {
+  padding: 12rpx 24rpx;
+  background: #eff6ff;
+  border: 1rpx solid #dbeafe;
+  border-radius: 16rpx;
+  margin: 0 12rpx 12rpx 0;
+}
+
+.symptom-tag-text {
+  font-size: 24rpx;
+  font-weight: 500;
+  color: #2563eb;
+}
+
+/* 快捷症状网格 */
+.quick-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.quick-grid-item {
+  width: 48%;
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+  border-radius: 24rpx;
+  margin-bottom: 16rpx;
+  border: 1rpx solid transparent;
+}
+
+.quick-grid-body {
+  border-color: #dbeafe;
+  background: rgba(239, 246, 255, 0.5);
+}
+
+.quick-grid-mind {
+  border-color: #fce7f3;
+  background: rgba(253, 242, 248, 0.5);
+}
+
+.quick-grid-icon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16rpx;
+}
+
+.quick-grid-icon-body {
+  background: #dbeafe;
+}
+
+.quick-grid-icon-mind {
+  background: #fce7f3;
+}
+
+.quick-grid-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.quick-grid-label {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #374151;
+  display: block;
+}
+
+.quick-grid-cat {
+  font-size: 20rpx;
+  color: #9ca3af;
+  margin-top: 4rpx;
+  display: block;
+}

@@ -1,0 +1,504 @@
+.welfare-page {
+  min-height: 100vh;
+  background: #f5f7fa;
+  padding-bottom: 100px;
+}
+
+.header {
+  position: relative;
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #f87171 100%);
+  padding: 40px 20px 80px;
+  overflow: hidden;
+
+  &-deco {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.15;
+
+    &-1 {
+      width: 250px;
+      height: 250px;
+      background: #fff;
+      top: -80px;
+      right: -60px;
+    }
+
+    &-2 {
+      width: 180px;
+      height: 180px;
+      background: #fff;
+      bottom: -40px;
+      left: -30px;
+    }
+  }
+
+  &-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  &-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+}
+
+.back-btn {
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-icon {
+  color: #fff;
+  font-size: 18px;
+}
+
+.title-row {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title-icon {
+  font-size: 24px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.header-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.content {
+  margin-top: -50px;
+  padding: 0 16px;
+  position: relative;
+  z-index: 2;
+}
+
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.card-header-icon {
+  font-size: 20px;
+}
+
+.card-header-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* 公益安全指数 */
+.score-overview {
+  text-align: center;
+  padding: 10px 0 20px;
+}
+
+.score-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 30px rgba(220, 38, 38, 0.3);
+}
+
+.score-value {
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.score-label {
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.region-tabs {
+  display: flex;
+  background: #f3f4f6;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 20px;
+}
+
+.region-tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 8px;
+  border-radius: 10px;
+  transition: all 0.3s;
+
+  &-active {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    .region-tab-text {
+      color: #dc2626;
+      font-weight: 600;
+    }
+  }
+}
+
+.region-tab-text {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.breakdown-item {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+}
+
+.breakdown-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.breakdown-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.breakdown-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.breakdown-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #dcfce7;
+  border-radius: 10px;
+  margin-top: 6px;
+}
+
+.breakdown-badge-text {
+  font-size: 11px;
+  color: #16a34a;
+}
+
+/* 危机事件 */
+.crisis-scroll {
+  white-space: nowrap;
+  margin: 0 -20px;
+  padding: 0 20px;
+}
+
+.crisis-card {
+  display: inline-block;
+  width: 260px;
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border-radius: 14px;
+  padding: 16px;
+  margin-right: 12px;
+  vertical-align: top;
+  border: 1px solid #fecaca;
+}
+
+.crisis-type {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #dc2626;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.crisis-type-text {
+  font-size: 12px;
+  color: #fff;
+  font-weight: 500;
+}
+
+.crisis-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #991b1b;
+  margin-bottom: 8px;
+  white-space: normal;
+}
+
+.crisis-desc {
+  font-size: 13px;
+  color: #7f1d1d;
+  line-height: 1.5;
+  white-space: normal;
+  margin-bottom: 12px;
+}
+
+.crisis-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.crisis-time {
+  font-size: 12px;
+  color: #b91c1c;
+}
+
+.crisis-status {
+  padding: 2px 8px;
+  background: #fef3c7;
+  border-radius: 8px;
+}
+
+.crisis-status-text {
+  font-size: 11px;
+  color: #b45309;
+}
+
+/* 公益分析 */
+.analysis-section {
+  margin-bottom: 20px;
+}
+
+.analysis-summary {
+  padding: 14px;
+  background: #fef2f2;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  border-left: 4px solid #dc2626;
+}
+
+.analysis-summary-text {
+  font-size: 14px;
+  color: #7f1d1d;
+  line-height: 1.6;
+}
+
+.trend-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f3f4f6;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.trend-name {
+  flex: 1;
+  font-size: 14px;
+  color: #374151;
+}
+
+.trend-bar-wrap {
+  width: 100px;
+  height: 8px;
+  background: #f3f4f6;
+  border-radius: 4px;
+  margin-right: 12px;
+  overflow: hidden;
+}
+
+.trend-bar {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(to right, #f87171, #dc2626);
+}
+
+.trend-change {
+  width: 50px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.suggestion-item {
+  padding: 14px;
+  background: #f9fafb;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.suggestion-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.suggestion-priority {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+
+  &-high {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+
+  &-medium {
+    background: #fef3c7;
+    color: #d97706;
+  }
+
+  &-low {
+    background: #dbeafe;
+    color: #2563eb;
+  }
+}
+
+.suggestion-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  flex: 1;
+}
+
+.suggestion-desc {
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* 热力图 */
+.heatmap-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.heatmap-wrap {
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.heatmap-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.heatmap-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.heatmap-legend-text {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* 帮助中心 */
+.help-center {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  padding: 12px 20px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 10px;
+  z-index: 50;
+}
+
+.help-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border-radius: 12px;
+
+  &-primary {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+  }
+
+  &-secondary {
+    background: #fef2f2;
+  }
+
+  &-outline {
+    background: #fff;
+    border: 1.5px solid #dc2626;
+  }
+}
+
+.help-btn-icon {
+  font-size: 22px;
+}
+
+.help-btn-text {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.help-btn-primary .help-btn-text {
+  color: #fff;
+}
+
+.help-btn-secondary .help-btn-text {
+  color: #dc2626;
+}
+
+.help-btn-outline .help-btn-text {
+  color: #dc2626;
+}
+
+.section-subtitle {
+  font-size: 13px;
+  color: #6b7280;
+  margin-left: auto;
+}
