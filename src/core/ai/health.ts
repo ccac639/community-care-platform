@@ -100,14 +100,7 @@ export async function healthChat(
     }
   }
 
-  // 2. 本轮新识别的症状
-  const newSymptoms: string[] = [];
-  for (const [keyword, symptom] of Object.entries(symptomKeywords)) {
-    if (userMessage.includes(keyword) && !identifiedSymptoms.includes(symptom)) {
-      // 注意：这里重新计算本轮新症状
-    }
-  }
-  // 重新计算：从历史消息中提取的旧症状
+  // 2. 从历史消息中提取的旧症状
   const historyText = history.map((m) => m.content).join(" ");
   const oldSymptoms: string[] = [];
   for (const [keyword, symptom] of Object.entries(symptomKeywords)) {

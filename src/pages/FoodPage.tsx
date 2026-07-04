@@ -8,8 +8,6 @@ interface FoodPageProps {
   onBack: () => void;
 }
 
-type RiskLevel = "safe" | "warning" | "danger";
-
 const riskConfig = {
   safe: { icon: CheckCircle, color: "text-green-500", bg: "bg-green-50", border: "border-green-200", label: "安全", labelBg: "bg-green-500" },
   warning: { icon: AlertTriangle, color: "text-amber-500", bg: "bg-amber-50", border: "border-amber-200", label: "注意", labelBg: "bg-amber-500" },

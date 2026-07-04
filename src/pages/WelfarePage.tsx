@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Heart, Search, AlertTriangle, Users, Baby, HelpCircle, AlertCircle, Share2, TrendingUp, TrendingDown, MapPin, Clock, ArrowRight, Shield, Zap, FileWarning } from "lucide-react";
+import { Heart, Search, AlertTriangle, Users, Baby, HelpCircle, Share2, TrendingUp, TrendingDown, MapPin, Clock, ArrowRight, Shield, Zap, FileWarning } from "lucide-react";
 import { cn } from "../lib/utils";
-import { welfareStats, crisisEvents, districtRisks, type WelfareStats, type CrisisEvent } from "../data/mockData";
+import { welfareStats, crisisEvents, districtRisks, type WelfareStats } from "../data/mockData";
 import { calculateWelfareRisk, analyzeRiskTrend, generateSuggestions, type WelfareRiskResult, type RiskTrend, type RiskSuggestion } from "../core/ai";
 import HeatMapView from "../components/HeatMapView";
 
@@ -36,9 +36,9 @@ export default function WelfarePage({ onBack }: WelfarePageProps) {
   const levelLabels = { province: "XX省", city: "XX市", district: "XX区" };
 
   const statItems: { key: keyof WelfareStats; label: string; icon: any; color: string }[] = [
-    { key: "missingBabyren", label: "失踪儿童", icon: AlertTriangle, color: "text-red-500 bg-red-50" },
+    { key: "missingChildren", label: "失踪儿童", icon: AlertTriangle, color: "text-red-500 bg-red-50" },
     { key: "distressPeople", label: "危难人群", icon: Users, color: "text-orange-500 bg-orange-50" },
-    { key: "leftBehindBabyren", label: "留守儿童", icon: Baby, color: "text-blue-500 bg-blue-50" },
+    { key: "leftBehindChildren", label: "留守儿童", icon: Baby, color: "text-blue-500 bg-blue-50" },
     { key: "helpEvents", label: "求助事件", icon: HelpCircle, color: "text-green-500 bg-green-50" },
     { key: "aiReviewed", label: "AI甄别", icon: Shield, color: "text-purple-500 bg-purple-50" },
   ];

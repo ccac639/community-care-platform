@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ArrowLeft, Send, Stethoscope, MapPin, ChevronRight, Activity, AlertCircle, Navigation, Phone, Crosshair, Map as MapIcon, Clock, Heart, Brain, Eye, Shield } from "lucide-react";
+import { ArrowLeft, Send, Stethoscope, MapPin, Activity, AlertCircle, Navigation, Map as MapIcon, Clock, Heart, Brain, Eye, Shield } from "lucide-react";
 import { cn } from "../lib/utils";
 import { hospitals as staticHospitals, type Hospital } from "../data/mockData";
 import { healthChat, createTimelineEntry, symptomList, type HealthChatResult, type HealthTimelineEntry } from "../core/ai";
@@ -151,7 +151,6 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
   };
 
   const riskCfg = latestResult ? riskConfig[latestResult.riskLevel] : riskConfig.low;
-  const nearestHospital = nearbyHospitals[0];
 
   return (
     <div className="animate-fade-in pb-24 min-h-screen bg-gray-50">
@@ -512,7 +511,6 @@ export default function MedicalPage({ onBack }: MedicalPageProps) {
             </div>
             <div className="flex-1 relative">
               <AMapView
-                hospitals={nearbyHospitals}
                 initialSelectedHospitalId={mapInitialHospitalId}
                 onClose={() => { setShowMap(false); setMapInitialHospitalId(null); }}
               />

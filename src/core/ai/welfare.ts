@@ -1,4 +1,4 @@
-import type { WelfareRiskResult, RiskTrend, RiskSuggestion } from "./types";
+import type { WelfareRiskResult, RiskTrend, RiskSuggestion, RiskTrendItem } from "./types";
 import { delay } from "./_utils";
 
 export async function calculateWelfareRisk(stats: {
@@ -10,7 +10,6 @@ export async function calculateWelfareRisk(stats: {
 }): Promise<WelfareRiskResult> {
   await delay(800);
 
-  const totalEvents = stats.missingChildren + stats.distressPeople + stats.leftBehindChildren;
   const handledRate = stats.helpEvents > 0 ? (stats.aiReviewed / stats.helpEvents) * 100 : 0;
   const eventDensity = stats.missingChildren * 10 + stats.distressPeople * 5 + stats.leftBehindChildren * 2;
 
@@ -61,7 +60,7 @@ export async function calculateWelfareRisk(stats: {
 export async function analyzeRiskTrend(): Promise<RiskTrend> {
   await delay(600);
 
-  const trends = [
+  const trends: RiskTrendItem[] = [
     {
       category: "失踪儿童",
       current: 23,

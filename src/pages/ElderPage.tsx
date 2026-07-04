@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Shield, MapPin, Bell, Phone, Watch, Wifi, AlertTriangle, CheckCircle, Clock, Users } from "lucide-react";
+import { ArrowLeft, MapPin, Bell, Phone, Watch, Wifi, AlertTriangle, CheckCircle, Clock, Users } from "lucide-react";
 import { cn } from "../lib/utils";
 
 interface ElderPageProps {
@@ -98,7 +98,7 @@ export default function ElderPage({ onBack }: ElderPageProps) {
                 className="w-full bg-gray-50 rounded-xl p-3 flex items-center gap-4"
               >
                 <div className="flex items-center gap-2 flex-1">
-                  <HeartBeat hr={elder.heartRate} />
+                  <HeartBeat />
                   <div>
                     <div className="text-lg font-bold text-gray-800">{elder.heartRate}<span className="text-xs font-normal text-gray-400 ml-1">bpm</span></div>
                     <div className="text-xs text-gray-400">心率正常</div>
@@ -139,7 +139,7 @@ export default function ElderPage({ onBack }: ElderPageProps) {
   );
 }
 
-function HeartBeat({ hr }: { hr: number }) {
+function HeartBeat() {
   return (
     <div className="w-9 h-9 bg-red-50 rounded-lg flex items-center justify-center relative">
       <svg viewBox="0 0 24 24" className="w-5 h-5 text-red-500">

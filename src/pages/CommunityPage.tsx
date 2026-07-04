@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ArrowLeft, Video, MessageCircle, Upload, X, Mic, MicOff, PhoneOff, Send, Sparkles, Heart, Play, Pause, Volume2, Image as ImageIcon, BookOpen, Calendar, Clock, AlertTriangle, Sun, CloudRain, Cloud, Snowflake, Wind } from "lucide-react";
+import { ArrowLeft, Video, MessageCircle, Upload, X, Mic, MicOff, PhoneOff, Send, Sparkles, Heart, Volume2, Image as ImageIcon, BookOpen, Calendar, Clock, AlertTriangle } from "lucide-react";
 import { cn, formatTime } from "../lib/utils";
 import { quickPhrases } from "../data/mockData";
 import { chat, generateVideoSubtitle, createEmotionRecord, generateEmotionDiary, emotionColors, type EmotionRecord, type EmotionDiaryEntry, type ChatResult } from "../core/ai";
@@ -145,7 +145,6 @@ function EmotionChat() {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [emotionRecords, setEmotionRecords] = useState<EmotionRecord[]>([]);
   const [lastEmotion, setLastEmotion] = useState<{ type: string; intensity: number } | null>(null);
   const [messageTimestamps, setMessageTimestamps] = useState<number[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -214,8 +213,7 @@ function EmotionChat() {
       setLastEmotion({ type: result.emotion, intensity: result.recognition.emotion.intensity });
     }
 
-    const record = await createEmotionRecord(content, result);
-    setEmotionRecords((prev) => [...prev, record]);
+    await createEmotionRecord(content, result);
 
     setIsTyping(false);
   };
@@ -518,11 +516,7 @@ function EmotionDiary({ emotionRecords }: { emotionRecords: EmotionRecord[] }) {
 
 export default function CommunityPage({ onBack }: CommunityPageProps) {
   const [activeTab, setActiveTab] = useState<"chat" | "diary">("chat");
-  const [emotionRecords, setEmotionRecords] = useState<EmotionRecord[]>([]);
-
-  const handleRecordsUpdate = (records: EmotionRecord[]) => {
-    setEmotionRecords(records);
-  };
+  const [emotionRecords] = useState<EmotionRecord[]>([]);
 
   return (
     <div className="animate-fade-in pb-24 min-h-screen bg-gray-50">
