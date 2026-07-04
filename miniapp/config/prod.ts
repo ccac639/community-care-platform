@@ -6,8 +6,5 @@ export default {
   mini: {},
   h5: {
     publicPath: "/community-care-platform/",
-    router: {
-      basename: "/community-care-platform/",
-    },
   },
 };
