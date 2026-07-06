@@ -19,7 +19,7 @@
   z-index: 100;
 
   &-title {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 600;
     color: #fff;
   }
@@ -64,7 +64,7 @@
 }
 
 .header-title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
   color: #fff;
   display: block;
@@ -72,7 +72,7 @@
 }
 
 .header-subtitle {
-  font-size: 14px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.85);
 }
 
@@ -90,7 +90,7 @@
   text-align: center;
   padding: 12px 8px;
   border-radius: 8px;
-  font-size: 15px;
+  font-size: 16px;
   color: #6b7280;
   transition: all 0.3s;
 
@@ -151,7 +151,7 @@
 }
 
 .score-label {
-  font-size: 14px;
+  font-size: 15px;
   color: #6b7280;
   margin-top: 4px;
 }
@@ -174,7 +174,7 @@
   }
 
   .stat-label {
-    font-size: 13px;
+    font-size: 14px;
     color: #6b7280;
   }
 }
@@ -208,7 +208,7 @@
   }
 
   .data-label {
-    font-size: 12px;
+    font-size: 14px;
     color: #6b7280;
   }
 }
@@ -232,7 +232,7 @@
   }
 
   .section-title {
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 600;
     color: #111827;
   }
@@ -261,7 +261,7 @@
 .event-type {
   padding: 4px 10px;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 14px;
   color: #fff;
   font-weight: 500;
   flex-shrink: 0;
@@ -271,7 +271,7 @@
   flex: 1;
 
   .event-title {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
     color: #111827;
     display: block;
@@ -279,14 +279,14 @@
   }
 
   .event-desc {
-    font-size: 13px;
+    font-size: 14px;
     color: #6b7280;
     display: block;
     margin-bottom: 6px;
   }
 
   .event-time {
-    font-size: 12px;
+    font-size: 14px;
     color: #9ca3af;
   }
 }
@@ -294,7 +294,7 @@
 .event-status {
   padding: 4px 10px;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   flex-shrink: 0;
 }
@@ -333,13 +333,13 @@
   width: 80px;
 
   .heat-name {
-    font-size: 13px;
+    font-size: 14px;
     color: #374151;
     flex: 1;
   }
 
   .heat-count {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
   }
 }
@@ -365,7 +365,7 @@
   }
 
   text {
-    font-size: 12px;
+    font-size: 14px;
     color: #6b7280;
   }
 }
@@ -407,7 +407,7 @@
 .trend-change {
   width: 50px;
   text-align: right;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
 
   &.up {
@@ -441,7 +441,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   flex-shrink: 0;
 
@@ -473,7 +473,7 @@
   }
 
   .suggestion-desc {
-    font-size: 13px;
+    font-size: 14px;
     color: #6b7280;
     line-height: 1.5;
   }
